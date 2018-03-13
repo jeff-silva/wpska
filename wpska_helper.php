@@ -31,6 +31,111 @@ function wpska_link($url) {
 
 
 
+function wpska_pagination($query) {
+	$big = 999999999; // need an unlikely integer
+	$pages = paginate_links( array(
+			'base' => str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) ),
+			'format' => '?paged=%#%',
+			'current' => max( 1, get_query_var('paged') ),
+			'total' => $query->max_num_pages,
+			'type'  => 'array',
+			'prev_next'   => true,
+			'prev_text'    => __('«'),
+			'next_text'    => __('»'),
+		)
+	);
+
+	if( is_array( $pages ) ) {
+		$paged = ( get_query_var('paged') == 0 ) ? 1 : get_query_var('paged');
+
+		$pagination = '<ul class="pagination">';
+
+		foreach ( $pages as $page ) {
+			$pagination .= "<li>$page</li>";
+		}
+
+		$pagination .= '</ul>';
+
+		echo $pagination;
+	}
+}
+
+
+function wpska_query($query, $cache='option') {
+	if ($cache) {
+		if ($cache=='option') { $cache = get_option('wpska_cache', 3600); }
+		$cache_key = md5(serialize($query) . $cache);
+		$result = get_transient($cache_key);
+		if (! $result) {
+			$result = new WP_Query($query);
+			set_transient($cache_key, $result, $cache);
+		}
+		return $result;
+	}
+
+	return new WP_Query($query);
+}
+
+
+
+function wpska_posts($query, $callback, $settings=array()) {
+	if (is_string($settings)) parse_str($settings, $settings);
+	$settings = is_array($settings)? $settings: array();
+	$settings = array_merge(array(
+		'cache' => get_option('wpska_cache', 3600),
+		'paginate' => true,
+	), $settings);
+
+	$result = wpska_query($query, $settings['cache']);
+
+	if (!empty($result->posts)) {
+		foreach($result->posts as $post) {
+			if (is_callable($callback)) {
+				call_user_func($callback, $post);
+			}
+		}
+		return $result;
+	}
+	
+	return false;
+}
+
+
+function wpska_post($query, $callback, $settings=array()) {
+	if (is_string($settings)) parse_str($settings, $settings);
+	$settings = is_array($settings)? $settings: array();
+	$settings = array_merge(array(
+		'cache' => get_option('wpska_cache', 3600),
+		'paginate' => true,
+	), $settings);
+	
+	$result = false;
+
+	if (! $query) {
+		global $post;
+		$result = $post;
+	}
+
+	else if (is_numeric($query)) {
+		$result = wpska_query(array('post_type'=>'any', 'p'=>$query), $settings['cache']);
+		if (isset($result->posts[0])) $result = $result->posts[0];
+	}
+
+	else {
+		$result = wpska_query($query, $settings['cache']);
+		if (isset($result->posts[0])) $result = $result->posts[0];
+	}
+
+	if (is_callable($callback)) {
+		call_user_func($callback, $result);
+		return $result;
+	}
+
+	return false;
+}
+
+
+
 function wpska_breadcrumbs($callback=null) {
 	global $post;
 
@@ -142,7 +247,7 @@ function wpska_header() {
 	?>
 	<script>
 	window.jQuery || document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>');
-	(typeof($.fn.modal) === 'undefined') || document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"><\/script>');
+	jQuery.fn.modal || document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"><\/script>');
 	</script>
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -250,8 +355,43 @@ class Wpska_Helper_Actions
 				return array_diff( $plugins, array( 'wpemoji' ) );
 			}
 			return array();
-		});
-		
+		});	
+	}
+
+
+	public function admin_menu()
+	{
+		if (isset($_POST['wpska-settings'])) {
+			unset($_POST['wpska-settings']);
+			foreach($_POST as $key=>$val) {
+				update_option($key, $val, true);
+			}
+		}
+
+
+		add_options_page('WP Ska Settings', 'WP Ska Settings', 'manage_options', 'wpska-settings', function() { ?>
+			<h1>WP Swiss Knife Army</h1>
+			<form action="" method="post">
+			<?php do_action('wpska_settings');
+			wpska_tab_render(); ?>
+			<div class="panel-footer text-right">
+				<input type="submit" name="wpska-settings" value="Salvar" class="btn btn-primary">
+			</div>
+			</form>
+		<?php });
+	}
+
+
+	public function wpska_settings()
+	{
+		wpska_tab('Básico', function() { ?>
+		<div class="row">
+			<div class="col-xs-4 form-group">
+				<label>Tempo de cache</label>
+				<input type="text" name="wpska_cache" value="<?php echo get_option('wpska_cache', 3600); ?>" class="form-control">
+			</div>
+		</div>
+		<?php });
 	}
 }
 
