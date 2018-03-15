@@ -50,7 +50,7 @@ function wpska_modules($keyname=null) {
 
 		$mod['actions'] = array();
 		$mod['actions']['update'] = array(
-			'icon' => ($mod['file_exists']? 'fa fa-fw fa-pencil': 'fa fa-fw fa-download'),
+			'icon' => ($mod['file_exists']? 'fa fa-fw fa-refresh': 'fa fa-fw fa-download'),
 			'label' => ($mod['file_exists']? 'Atualizar': 'Baixar'),
 			'url' => "options-general.php?page=wpska-settings&wpska-update={$mod['id']}",
 			'attr' => '',
