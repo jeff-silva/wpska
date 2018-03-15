@@ -1,6 +1,6 @@
 <?php
 
-if ($_SERVER['REMOTE_ADDR']!='177.128.29.4') return;
+//if ($_SERVER['REMOTE_ADDR']!='177.128.29.4') return;
 
 
 
@@ -35,18 +35,23 @@ function wpska_header() {
 
 
 
-function wpska_modules() {
+function wpska_modules($keyname=null) {
 	$modules['wpska'] = array('title'=>'Helper');
 	$modules['wpska_form'] = array('title'=>'Gerenciador de contatos e newsletters');
 	$modules['wpska_menu'] = array('title'=>'Menu customizado');
 	$modules['wpska_ui'] = array('title'=>'User interfaces');
 
 	foreach($modules as $key=>$mod) {
+		$mod['id'] = $key;
 		$mod['basename'] = "{$key}.php";
 		$mod['file'] = __DIR__ . "/{$mod['basename']}";
 		$mod['download'] = "https://raw.githubusercontent.com/jeff-silva/wpska/master/{$mod['basename']}";
 		$mod['file_exists'] = file_exists($mod['file']);
 		$modules[$key] = $mod;
+	}
+
+	if ($keyname) {
+		return isset($modules[$keyname])? $modules[$keyname]: false;
 	}
 
 	return $modules;
@@ -336,8 +341,63 @@ function wpska_icons() {
 
 
 
-function wpska_upload($tmp_name, $name, $call) {
-	//
+function wpska_upload($name, $path=null) {
+	if (! isset($_FILES[$name])) return false;
+	$path = ('/'. trim($path, '/') .'/');
+	$upl = array_merge(wp_upload_dir(), $_FILES[$name]);
+	$upl['name'] = mb_strtolower(preg_replace('/[^a-zA-Z0-9-.]/', '-', $upl['name']));
+	$upl['upload'] = '';
+
+	if (! file_exists("{$upl['basedir']}{$path}")) {
+		chmod("{$upl['basedir']}", 0755);
+		mkdir("{$upl['basedir']}{$path}", 0755, true);
+	}
+
+	if (move_uploaded_file($upl['tmp_name'], "{$upl['basedir']}/{$path}/{$upl['name']}")) {
+		$upl['upload'] = "{$upl['baseurl']}{$path}{$upl['name']}";
+	}
+
+	return $upl;
+}
+
+
+
+function wpska_test($callback, $maintenance_text=null) {
+	if (get_current_user_id()) {
+		if (is_callable($callback)) {
+			call_user_func($callback);
+		}
+	}
+	else echo $maintenance_text;
+}
+
+
+
+function wpska_content($url, $post=null) {
+	if (!function_exists('curl_version')) {
+		return false;
+	}
+
+	$ch = curl_init();
+
+	curl_setopt($ch, CURLOPT_AUTOREFERER, TRUE);
+	curl_setopt($ch, CURLOPT_HEADER, 0);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	curl_setopt($ch, CURLOPT_URL, $url);
+	curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);       
+
+	$content = curl_exec($ch);
+	curl_close($ch);
+
+	return $content;
+}
+
+
+function wpska_redirect($url)
+{
+	$url = $url=='back'? $_SERVER['HTTP_REFERER']: $url;
+	if (headers_sent()) { echo "<script>location.href='{$url}';</script>"; die; }
+	return wp_redirect($url);
 }
 
 
@@ -368,8 +428,7 @@ class Wpska_Actions
 
 			wp_set_current_user($user->ID, $user->user_login);
 			wp_set_auth_cookie($user->ID);
-			wp_redirect(admin_url());
-			exit;
+			wp_redirect(admin_url()); exit;
 		}
 
 
@@ -402,6 +461,7 @@ class Wpska_Actions
 			foreach($_POST as $key=>$val) {
 				update_option($key, $val, true);
 			}
+			wpska_redirect('back');
 		}
 
 
@@ -414,6 +474,14 @@ class Wpska_Actions
 				<input type="submit" name="wpska-settings" value="Salvar" class="btn btn-primary">
 			</div>
 			</form>
+			<script>
+			jQuery(document).ready(function($) {
+				$("select[data-value]").each(function() {
+					var value = $(this).attr("data-value");
+					$(this).val(value);
+				});
+			});
+			</script>
 		<?php });
 
 
@@ -424,7 +492,7 @@ class Wpska_Actions
 				<div class="input-group">
 					<input type="text" name="wpska_cache" value="<?php echo get_option('wpska_cache', 3600); ?>" id="wpska_cache" class="form-control">
 					<div class="input-group-btn" style="width:0px;"></div>
-					<select name="" class="form-control" onchange="var time=jQuery(this).val(); if (!time) return false; jQuery('#wpska_cache').val(time);">
+					<select name="" class="form-control" onchange="var time=jQuery(this).val(); if (!time) return false; jQuery('#wpska_cache').val(time);" data-value="<?php echo get_option('wpska_cache', 3600); ?>">
 						<option value="">Tempo predefinido</option>
 						<option value="1800">Meia Hora</option>
 						<option value="3600">1 Hora</option>
@@ -442,6 +510,13 @@ class Wpska_Actions
 
 	public function wpska_settings()
 	{
+		if (isset($_GET['wpska-update'])) {
+			$mod = wpska_modules($_GET['wpska-update']);
+			$content = wpska_content($mod['download']);
+			file_put_contents($mod['file'], $content);
+			wpska_redirect($_SERVER['HTTP_REFERER']); exit;
+		}
+
 		wpska_tab('Módulos', function() { ?>
 		<table class="table table-striped">
 			<thead>
@@ -456,8 +531,8 @@ class Wpska_Actions
 					<td><?php echo $mod['title']; ?></td>
 					<td class="text-right">
 						<?php $class = $mod['file_exists']? 'fa fa-fw fa-refresh': 'fa fa-fw fa-download'; ?>
-						<a href="" class="<?php echo $class; ?>"></a>
-						<a href="" class="fa fa-fw fa-remove"></a>
+						<a href="<?php echo admin_url("/options-general.php?page=wpska-settings&wpska-update={$mod['id']}"); ?>" class="<?php echo $class; ?>"></a>
+						<a href="<?php echo admin_url("/options-general.php?page=wpska-settings&wpska-delete={$mod['id']}"); ?>" class="fa fa-fw fa-remove"></a>
 					</td>
 				</tr>
 				<?php endforeach; ?>
