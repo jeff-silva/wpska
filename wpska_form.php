@@ -161,8 +161,7 @@ function wpska_form_response($form_id, $callback) {
 					$post_content .= "<p><strong>{$key}:</strong> {$val}</p>";
 				}
 
-				$post_title = ucwords(str_replace('/[^a-zA-Z0-9]/', ' ', $_REQUEST['form_id']));
-				$post_title .= " #{$_REQUEST['wpska_form_action']}";
+				$post_title = ucwords(preg_replace('/[^a-zA-Z0-9]/', ' ', $_REQUEST['form_id']));
 				$return = wp_insert_post(array(
 					'post_content' => $post_content,
 					'post_title' => $post_title,
@@ -276,7 +275,6 @@ class Wpska_Form_Actions
 				),
 				'public' => true,
 				'has_archive' => true,
-				'supports' => array('title'),
 			));
 		}
 
@@ -288,7 +286,6 @@ class Wpska_Form_Actions
 				),
 				'public' => true,
 				'has_archive' => true,
-				'supports' => array('title'),
 			));
 		}
 	}
@@ -401,9 +398,9 @@ class Wpska_Form_Filters
 		if ($column=='data_read'): ?>
 			<div style="float:right;">
 				<?php $delete_url = wp_nonce_url(admin_url("post.php?post={$post->ID}&action=trash"), "trash-post_{$post->ID}"); ?>
-				<a href="<?php echo $delete_url; ?>">Deletar</a>
+				<a href="<?php echo $delete_url; ?>" onclick="return confirm('Tem certeza que deseja deletar?');">Deletar</a>
 			</div>
-			<strong><?php echo $post->post_title; ?></strong><br>
+			<strong><?php echo "#{$post->ID} - {$post->post_title}"; ?></strong><br>
 
 			<div class="<?php echo "post-text-toggle-{$post->ID}"; ?>"><a href="javascript:;" onclick="post_text_toggle('<?php echo ".post-text-toggle-{$post->ID}"; ?>');">Ler mais</a></div>
 
