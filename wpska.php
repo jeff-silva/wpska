@@ -47,6 +47,23 @@ function wpska_modules($keyname=null) {
 		$mod['file'] = __DIR__ . "/{$mod['basename']}";
 		$mod['download'] = "https://raw.githubusercontent.com/jeff-silva/wpska/master/{$mod['basename']}";
 		$mod['file_exists'] = file_exists($mod['file']);
+
+		$mod['actions'] = array();
+		$mod['actions']['update'] = array(
+			'icon' => ($mod['file_exists']? 'fa fa-fw fa-pencil': 'fa fa-fw fa-download'),
+			'label' => ($mod['file_exists']? 'Atualizar': 'Baixar'),
+			'url' => "options-general.php?page=wpska-settings&wpska-update={$mod['id']}",
+			'attr' => '',
+		);
+		$mod['actions']['delete'] = array(
+			'icon' => 'fa fa-fw fa-remove',
+			'label' => 'Deletar',
+			'url' => "options-general.php?page=wpska-settings&wpska-delete={$mod['id']}",
+			'attr' => 'onclick="return confirm(\'Tem certeza que deseja deletar?\');"',
+		);
+
+		if ($mod['id']=='wpska') { unset($mod['actions']['delete']); }
+
 		$modules[$key] = $mod;
 	}
 
@@ -530,9 +547,9 @@ class Wpska_Actions
 				<tr>
 					<td><?php echo $mod['title']; ?></td>
 					<td class="text-right">
-						<?php $class = $mod['file_exists']? 'fa fa-fw fa-refresh': 'fa fa-fw fa-download'; ?>
-						<a href="<?php echo admin_url("/options-general.php?page=wpska-settings&wpska-update={$mod['id']}"); ?>" class="<?php echo $class; ?>"></a>
-						<a href="<?php echo admin_url("/options-general.php?page=wpska-settings&wpska-delete={$mod['id']}"); ?>" class="fa fa-fw fa-remove"></a>
+						<?php foreach($mod['actions'] as $key=>$act): ?>
+						<a href="<?php echo admin_url($act['url']); ?>" class="<?php echo $act['icon']; ?>" title="<?php echo $act['label']; ?>" <?php echo $act['attr']; ?> ></a>
+						<?php endforeach; ?>
 					</td>
 				</tr>
 				<?php endforeach; ?>
