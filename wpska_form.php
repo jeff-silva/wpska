@@ -112,15 +112,16 @@ function wpska_form($form_id, $content=null, $attrs=null, $post=array()) {
 				$form.removeClass("wpska-form-loading");
 				resp = JSON.parse(resp);
 				if (resp.error) {
-					$error.show().html(resp.error.join('<br />'));
+					$error.fadeIn(200).html(resp.error.join('<br />'));
 					return false;
 				}
 
-				$success.show();
+				$success.fadeIn(200);
 				form.reset();
 			},
 			error: function(resp) {
-				console.log('error:', resp);
+				$form.removeClass("wpska-form-loading");
+				$error.fadeIn(200).html(resp.statusText);
 			},
 		});
 
@@ -318,14 +319,17 @@ class Wpska_Form_Actions
 				<div class="panel panel-default">
 					<div class="panel-heading">Contato</div>
 					<div class="panel-body">
+						
+						<?php $wpska_form_contact = get_option('wpska_form_contact', '0'); ?>
 						<div class="form-group">
 							<label>Ativar Contato</label>
-							<select name="wpska_form_contact" class="form-control" data-value="<?php echo get_option('wpska_form_contact', '0'); ?>">
+							<select name="wpska_form_contact" class="form-control" data-value="<?php echo $wpska_form_contact; ?>">
 								<option value="0">Inativo</option>
 								<option value="1">Ativo</option>
 							</select>
 						</div>
 
+						<?php if ($wpska_form_contact): ?>
 						<div class="form-group">
 							<label>Enviar para o e-mail</label>
 							<input type="text" name="wpska_form_contact_to" value="<?php echo get_option('wpska_form_contact_to'); ?>" class="form-control">
@@ -344,6 +348,7 @@ class Wpska_Form_Actions
 							Caso essa permissão não esteja disponível, deixar este campo vazio, assim os uploads
 							serão feitos para a pasta raiz.</small>
 						</div>
+						<?php endif; ?>
 					</div>
 				</div>
 			</div>
