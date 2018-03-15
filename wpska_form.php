@@ -2,14 +2,44 @@
 
 /*
 
-1) Crie o HTML. Parâmetro 1 é o ID do formulário, 
+1) Crie uma ação para validação dos dados do formulário. O parâmetro 1 é um
+ID, para identificar qual formulário deve receber essa validação. O parâmetro 2
+é um callback contendo a lógica da validação.
 
-<?php echo wpska_form_contact('footer', null, function() { ?>
+wpska_form_response('fale-conosco', function($post, $resp) {
+	
+	if (! filter_var($post['email'], FILTER_VALIDATE_EMAIL)) {
+		$resp['error'][] = 'E-mail inválido';
+	}
+
+	return $resp;
+});
+
+
+
+2) Crie o HTML do formulário chamando a função wpska_form_contact, onde o parâmetro 1
+é o ID do formulário, o mesmo que foi definido no parâmetro 1 da ação acima.
+O parâmetro 2 é um callback contendo o html, existe um terceiro parâmetro que não é
+obrigatório, onde através dele é possível informar atributos da tag form usando string pura.
+
+<?php echo wpska_form_contact('fale-conosco', function() { ?>
 	<div class="form-group">
 		<label>E-mail</label>
 		<input type="text" name="email" class="form-control">
 	</div>
+
+	<input type="submit" value="Enviar" class="btn btn-default">
+
+	<div class="wpska-form-error"></div>
+	<div class="wpska-form-success">Contato enviado. Obrigado!</div>
 <?php }); ?>
+
+Note os elementos ".wpska-form-success" e ".wpska-form-danger".
+Eles não são obrigatórios, mas caso existam tem importância para a resposta do formulário.
+O ".wpska-form-error" por padrão é invisível, e torna-se visível em caso de erro na validação.
+Ele recebe um HTML com as mensagens de erro validadas.
+O ".wpska-form-success" também é invisível por padrão, e torna-se visível em caso de sucesso.
+A mensagem de agradecimento é escrita diretamente dentro dela, ou seja, não é preenchida pela resposta ajax.
 
 */
 
@@ -17,13 +47,13 @@
 
 
 function wpska_form_contact($form_id, $content=null, $attrs=null) {
-	return wpska_form($form_id, $attrs, $content, array('post_type'=>'wpska_contact'));
+	return wpska_form($form_id, $content, $attrs, array('post_type'=>'wpska_contact'));
 }
 
 
 
 function wpska_form_newsletter($form_id, $content=null, $attrs=null) {
-	return wpska_form($form_id, $attrs, $content, array('post_type'=>'wpska_newsletter'));
+	return wpska_form($form_id, $content, $attrs, array('post_type'=>'wpska_newsletter'));
 }
 
 
@@ -131,7 +161,7 @@ function wpska_form_response($form_id, $callback) {
 					$post_content .= "<p><strong>{$key}:</strong> {$val}</p>";
 				}
 
-				$post_title = uvwords(str_replace('/[^a-zA-Z0-9]/', ' ', $_REQUEST['form_id']));
+				$post_title = ucwords(str_replace('/[^a-zA-Z0-9]/', ' ', $_REQUEST['form_id']));
 				$post_title .= " #{$_REQUEST['wpska_form_action']}";
 				$return = wp_insert_post(array(
 					'post_content' => $post_content,
