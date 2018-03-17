@@ -2,27 +2,20 @@
 
 /*
 
-1) Crie uma ação para validação dos dados do formulário. O parâmetro 1 é um
-ID, para identificar qual formulário deve receber essa validação. O parâmetro 2
-é um callback contendo a lógica da validação.
+1) Crie a validação no functions.php:
 
-wpska_form_response('fale-conosco', function($post, $resp) {
-	
+wpska_contact_validate('fale-conosco', function($resp, $post) {
 	if (! filter_var($post['email'], FILTER_VALIDATE_EMAIL)) {
-		$resp['error'][] = 'E-mail inválido';
+		$resp->error('E-mail inválido');
 	}
-
 	return $resp;
 });
 
 
 
-2) Crie o HTML do formulário chamando a função wpska_form_contact, onde o parâmetro 1
-é o ID do formulário, o mesmo que foi definido no parâmetro 1 da ação acima.
-O parâmetro 2 é um callback contendo o html, existe um terceiro parâmetro que não é
-obrigatório, onde através dele é possível informar atributos da tag form usando string pura.
+2) Crie o HTML no template:
 
-<?php echo wpska_form_contact('fale-conosco', function() { ?>
+<?php echo wpska_contact('fale-conosco', function() { ?>
 	<div class="form-group">
 		<label>E-mail</label>
 		<input type="text" name="email" class="form-control">
@@ -34,73 +27,95 @@ obrigatório, onde através dele é possível informar atributos da tag form usa
 	<div class="wpska-form-success">Contato enviado. Obrigado!</div>
 <?php }); ?>
 
-Note os elementos ".wpska-form-success" e ".wpska-form-danger".
-Eles não são obrigatórios, mas caso existam tem importância para a resposta do formulário.
-O ".wpska-form-error" por padrão é invisível, e torna-se visível em caso de erro na validação.
-Ele recebe um HTML com as mensagens de erro validadas.
-O ".wpska-form-success" também é invisível por padrão, e torna-se visível em caso de sucesso.
-A mensagem de agradecimento é escrita diretamente dentro dela, ou seja, não é preenchida pela resposta ajax.
-
 */
 
 
 
+function wpska_contact_validate($form_id, $callback) {
+	add_filter("wpska_contact_action_{$form_id}", function($resp) use($form_id, $callback) {
+		$request = $_REQUEST;
+		unset($request['wpska_form_action'], $request['wpska_contact_action'], $request['post_type'], $request['form_id']);
 
-function wpska_contact($form_id, $content=null, $attrs=null) {
-	return wpska_form($form_id, $content, $attrs, array('post_type'=>'wpska_contact'));
+		foreach($_FILES as $key=>$val) {
+			if ($_FILES[$key]['tmp_name']) {
+				$upl = wpska_upload($key, get_option('wpska_form_contact_attachments_dir', '/form-attachments/'));
+				if ($upl['error']) { $resp['error'][] = $upl['error']; }
+				else { $request[$key] = $upl['upload']; }
+			}
+		}
+
+		$resp2 = call_user_func($callback, $resp, $request);
+		$resp = get_class($resp2)=='Wpska_Response'? $resp2: $resp;
+
+		if (! $resp->error()) {
+
+			$post_content = '';
+			foreach($request as $key=>$val) {
+				$key = ucfirst(preg_replace('/[-_]/', ' ', $key));
+				$post_content .= "<p><strong>{$key}:</strong> {$val}</p>";
+			}
+
+
+			$post_title = ucwords(preg_replace('/[^a-zA-Z0-9]/', ' ', $_REQUEST['form_id']));
+			$return = wp_insert_post(array(
+				'post_content' => $post_content,
+				'post_title' => $post_title,
+				'post_status' => 'draft',
+				'post_type' => 'wpska_contact',
+			), true);
+
+			foreach($request as $key=>$val) { update_post_meta($return, $key, $val); }
+
+			if ($to = get_option('wpska_form_contact_to')) {
+				wp_mail($to, $post_title, $post_content, array(
+					'Content-Type: text/html; charset=UTF-8',
+				));
+			}
+
+			$resp->success($return);
+			return $resp;
+		}
+	});
 }
 
 
 
-function wpska_newsletter($form_id, $content=null, $attrs=null) {
-	return wpska_form($form_id, $content, $attrs, array('post_type'=>'wpska_newsletter'));
-}
+//return wpska_form($form_id, $content, $attrs, array('post_type'=>'wpska_contact'));
+function wpska_contact($form_id, $content=null) {
 
-
-
-function wpska_form($form_id, $content=null, $attrs=null, $post=array()) {
-	
 	if (is_callable($content)) {
 		ob_start();
 		call_user_func($content);
 		$content = ob_get_clean();
 	}
 
+	$post = array();
 	$post['form_id'] = $form_id;
-	$post['wpska_form_action'] = uniqid();
-	
+	$post['wpska_contact_action'] = uniqid();
+
 	?>
-	<form <?php echo $attrs; ?> onsubmit="return wpska_form_submit(this);">
-		<?php foreach($post as $key=>$val) { echo "<input type='hidden' name='{$key}' value='{$val}'>"; } ?> 
-		<?php echo $content; ?>
+	<form autocomplete="off" onsubmit="return wpska_contact(this);">
+	<?php foreach($post as $key=>$val) echo "<input type='hidden' name='{$key}' value='{$val}' >"; ?> 
+	<?php echo $content; ?>
 	</form>
 	<script>
-	var wpska_form_submit = function(form) {
-		var $=jQuery,
-		$form=$(form),
-		$success=$form.find(".wpska-form-success"),
-		$error=$form.find(".wpska-form-error"),
-		post=<?php echo json_encode($post); ?>;
+	var wpska_contact = function(form) {
+		var $=jQuery, $form=$(form), $success=$form.find(".wpska-form-success"),
+		$error=$form.find(".wpska-form-error"), post={};
 
 		var formData = new FormData();		
 		$form.find(":input").each(function() {
 			if (!this.name) return;
-
 			if (this.type=="file") {
 				for(var i in this.files) {
 					if (typeof this.files[i]!="object") continue;
 					formData.append((this.name+'_'+i), this.files[i]);
 				}
 			}
-
-			else {
-				formData.append(this.name, this.value);
-			}
+			else { formData.append(this.name, this.value); }
 		});
 
-
-		$success.hide();
-		$error.hide();
+		$success.hide(); $error.hide();
 		$form.addClass("wpska-form-loading");
 		$.ajax({
 			url: '<?php echo site_url('?wpska_form_action'); ?>',
@@ -116,8 +131,10 @@ function wpska_form($form_id, $content=null, $attrs=null, $post=array()) {
 					return false;
 				}
 
-				$success.fadeIn(200);
-				form.reset();
+				if (resp.success) {
+					$success.fadeIn(200);
+					form.reset();
+				}
 			},
 			error: function(resp) {
 				$form.removeClass("wpska-form-loading");
@@ -128,118 +145,74 @@ function wpska_form($form_id, $content=null, $attrs=null, $post=array()) {
 		return false;
 	};
 	</script>
-	<style>
-	.wpska-form-loading {opacity:.5;}
-	.wpska-form-error, .wpska-form-success {display:none;}</style>
+	<style>.wpska-form-success, .wpska-form-error {display:none;}</style>
 	<?php
 }
 
 
 
-function wpska_form_response($form_id, $callback) {
-	if (isset($_REQUEST['wpska_form_action']) AND isset($_REQUEST['form_id']) AND $_REQUEST['form_id']==$form_id AND is_callable($callback)) {
-		add_action('init', function() use($form_id, $callback) {
-			$request = $_POST;
-			unset($request['form_id'], $request['post_type'], $request['wpska_form_action']);
-			$resp = array('success'=>false, 'error'=>array());
-
-			foreach($_FILES as $key=>$val) {
-				if ($_FILES[$key]['tmp_name']) {
-					$upl = wpska_upload($key, get_option('wpska_form_contact_attachments_dir', '/form-attachments/'));
-					if ($upl['error']) { $resp['error'][] = $upl['error']; }
-					else { $request[$key] = $upl['upload']; }
-				}
-			}
-
-			$resp = call_user_func($callback, $request, $resp);
-
-			if (empty($resp['error'])) {
-				$resp['error'] = false;
-
-				$post_content = '';
-				foreach($request as $key=>$val) {
-					$key = ucfirst(preg_replace('/[-_]/', ' ', $key));
-					$post_content .= "<p><strong>{$key}:</strong> {$val}</p>";
-				}
-
-				$post_title = ucwords(preg_replace('/[^a-zA-Z0-9]/', ' ', $_REQUEST['form_id']));
-				$return = wp_insert_post(array(
-					'post_content' => $post_content,
-					'post_title' => $post_title,
-					'post_status' => 'draft',
-					'post_type' => $_REQUEST['post_type'],
-				), true);
-
-				if ($return) {
-					foreach($request as $key=>$val) {
-						update_post_meta($return, $key, $val);
-					}
-				}
-
-				if ($to = get_option('wpska_form_contact_to')) {
-					wp_mail($to, $post_title, $post_content, array('Content-Type: text/html; charset=UTF-8'));
-				}
-
-				$resp['success'] = $return;
-			}
-			
-			$resp['post'] = $request;
-			echo json_encode($resp); die;
-		});
+function wpska_newsletter($form_id, $content=null, $attrs=null) {
+	if (is_callable($content)) {
+		ob_start();
+		call_user_func($content);
+		$content = ob_get_clean();
 	}
+
+	$post = array();
+	$post['form_id'] = $form_id;
+	$post['wpska_newsletter_action'] = uniqid();
+
+	?>
+	<form autocomplete="off" onsubmit="return wpska_newsletter(this);">
+	<?php foreach($post as $key=>$val) echo "<input type='hidden' name='{$key}' value='{$val}' >"; ?> 
+	<?php echo $content; ?>
+	</form>
+	<script>
+	var wpska_newsletter = function(form) {
+		var $=jQuery, $form=$(form), $success=$form.find(".wpska-form-success"),
+		$error=$form.find(".wpska-form-error"), post={};
+
+		var formData = new FormData();		
+		$form.find(":input").each(function() {
+			if (!this.name) return;
+			formData.append(this.name, this.value);
+		});
+
+		$success.hide(); $error.hide();
+		$form.addClass("wpska-form-loading");
+		$.ajax({
+			url: '<?php echo site_url('?wpska_newsletter_action'); ?>',
+			type: 'post',
+			contentType: false,
+			processData: false,
+			data: formData,
+			success: function(resp) {
+				$form.removeClass("wpska-form-loading");
+				resp = JSON.parse(resp);
+				if (resp.error) {
+					$error.fadeIn(200).html(resp.error.join('<br />'));
+					return false;
+				}
+
+				if (resp.success) {
+					$success.fadeIn(200);
+					form.reset();
+				}
+			},
+			error: function(resp) {
+				$form.removeClass("wpska-form-loading");
+				$error.fadeIn(200).html(resp.statusText);
+			},
+		});
+
+		return false;
+	};
+	</script>
+	<style>.wpska-form-success, .wpska-form-error {display:none;}</style>
+	<?php
 }
 
 
-
-
-add_filter('manage_wpska_form_posts_columns', function ( $columns ) {
-	$columns['wpska_form_data'] = 'Dados';
-	return $columns;
-});
-
-add_filter('manage_edit-wpska_form_columns', function($columns) {
-	return array(
-		'cb' => $columns['cb'],
-		'title' => $columns['title'],
-		'wpska_form_data' => $columns['wpska_form_data'],
-	);
-});
-
-
-add_action('manage_wpska_form_posts_custom_column', function ($column_name, $post_id ) {
-    
-    if ($column_name == 'wpska_form_data') {
-    	$post = get_post($post_id);
-    	$post->post_content = json_decode($post->post_content, true);
-    	$ignore = array('wpska_form_action', 'type', 'email');
-    	?>
-		
-		<button style="float:right;" onclick="_toggleDetails(this);">Mais detalhes</button>
-    	<strong><?php echo $post->post_content['email']; ?></strong>
-    	<div style="clear:both;"></div>
-		<div class="toggle-details" style="display:none;">
-			<?php foreach($post->post_content as $key=>$val): if (in_array($key, $ignore)) continue; ?>
-			<div>
-				<strong><?php echo $key; ?></strong>
-				&nbsp; <?php echo $val; ?>
-			</div>
-			<?php endforeach; ?>
-		</div>
-
-		<script>
-		var _toggleDetails = function(el) {
-			var $=jQuery;
-			var $wrapper = $(el).parent().find('.toggle-details');
-			$wrapper.slideToggle(200);
-			if ($wrapper.find(">*").length==0) {
-				$wrapper.html('<div style="color:#777; text-align:center; background:#eee; padding:5px;">Nenhum detalhe</div>');
-			}
-		};
-		</script>
-    	<?php
-	}
-
-}, 10, 2);
 
 
 add_action('load-edit.php', function() { ?>
@@ -252,6 +225,7 @@ add_action('load-edit.php', function() { ?>
 
 
 
+
 class Wpska_Form_Actions
 {
 	
@@ -261,13 +235,78 @@ class Wpska_Form_Actions
 	{
 		foreach(get_class_methods($this) as $method) {
 			if ($method=='__construct') continue;
-			add_action($method, array($this, $method));
+			add_action($method, array($this, $method), 10, 12);
 		}
 	}
 
 
 
 	public function init() {
+		
+		// Contact action
+		if (isset($_REQUEST['wpska_contact_action'])) {
+			$resp = new Wpska_Response();
+			$resp2 = apply_filters("wpska_contact_action_{$_REQUEST['form_id']}", $resp);
+			$resp = get_class($resp2)=='Wpska_Response'? $resp2: $resp;
+			$resp->json();
+		}
+
+
+		// Newsletter action
+		if (isset($_REQUEST['wpska_newsletter_action'])) {
+			global $wpdb;
+			$resp = new Wpska_Response();
+
+			// Email invalido
+			if (! filter_var($_REQUEST['email'], FILTER_VALIDATE_EMAIL)) {
+				$resp->error('E-mail inválido');
+			}
+
+			// Email existente
+			$has_posts = sizeof(get_posts(array(
+				'post_type' => 'wpska_newsletter',
+				'post_status' => 'any',
+				'meta_query' => array(
+					'relation' => 'AND',
+					array(
+						'key' => 'email',
+						'value' => $_REQUEST['email'],
+						'compare' => '=',
+					),
+					array(
+						'key' => 'form_id',
+						'value' => $_REQUEST['form_id'],
+						'compare' => '=',
+					),
+				),
+			)));
+			if ($has_posts) {
+				$resp->error('E-mail já cadastrado');
+			}
+
+			// Nome existe mas está vazio
+			if (isset($_REQUEST['name']) AND empty($_REQUEST['name'])) {
+				$resp->error('Por favor, informe seu nome.');
+			}
+
+			if (! $resp->error()) {
+				$return = wp_insert_post(array(
+					'post_content' => "Nome: {$_REQUEST['name']} <br>E-mail: {$_REQUEST['email']}",
+					'post_title' => $_REQUEST['email'],
+					'post_status' => 'draft',
+					'post_type' => 'wpska_newsletter',
+				), true);
+
+				update_post_meta($return, 'name', $_REQUEST['name']);
+				update_post_meta($return, 'email', $_REQUEST['email']);
+				update_post_meta($return, 'form_id', $_REQUEST['form_id']);
+				$resp->success($return);
+			}
+
+			$resp->json();
+		}
+
+
 		if (get_option('wpska_form_contact')) {
 			register_post_type('wpska_contact', array(
 				'labels' => array(
@@ -390,10 +429,6 @@ class Wpska_Form_Filters
 		return array('data_read' => 'Ler');
 	}
 
-	public function manage_wpska_newsletter_posts_columns($columns)
-	{
-		return array('data_read' => 'Ler');
-	}
 
 	public function manage_wpska_contact_posts_custom_column($column)
 	{
@@ -411,19 +446,44 @@ class Wpska_Form_Filters
 
 			<div class="<?php echo "post-text-toggle-{$post->ID}"; ?>" style="display:none;">
 			<a href="javascript:;" onclick="post_text_toggle('<?php echo ".post-text-toggle-{$post->ID}"; ?>');">Ler menos</a>
-			<div style="padding:15px; background:#fff;">
+			<div style="padding:15px; background:#fff; border:solid 1px #eee;">
 				<?php $regex = '~(?:(https?)://([^\s<]+)|(www\.[^\s<]+?\.[^\s<]+))(?<![\.,:])~i';
 				$post_content = preg_replace($regex, '<a href="$0" target="_blank">$0</a>', $post->post_content);
-				echo $post_content; ?>
+				echo nl2br($post_content); ?>
 			</div>
 			</div>
 
-			<script>
-			var post_text_toggle = function(className) {
-				jQuery(className).slideToggle(200);
-			};
-			</script>
+			<script>var post_text_toggle = function(className) { jQuery(className).slideToggle(200); };</script>
 		<?php endif;
+
+	}
+
+
+	public function manage_wpska_newsletter_posts_columns($columns)
+	{
+		return array(
+			'newsletter_email' => 'E-mail',
+			'newsletter_name' => 'Nome',
+			'newsletter_form_id' => 'Grupo',
+		);
+	}
+
+
+	public function manage_wpska_newsletter_posts_custom_column($column)
+	{
+		global $post;
+		
+		if ($column=='newsletter_email') {
+			echo $post->post_title;
+		}
+
+		else if ($column=='newsletter_name') {
+			echo get_post_meta($post->ID, 'name', true);
+		}
+
+		else if ($column=='newsletter_form_id') {
+			echo get_post_meta($post->ID, 'form_id', true);
+		}
 
 	}
 

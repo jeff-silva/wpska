@@ -80,6 +80,44 @@ function wpska_modules($keyname=null) {
 }
 
 
+class Wpska_Response
+{
+	public $success=false;
+	public $error=array();
+
+	public function error($error=false) {
+		if ($error) $this->error[] = $error;
+		return empty($this->error)? false: $this->error;
+	}
+
+	public function success($success=false) {
+		if ($success) $this->success = $success;
+		return $this->success;
+	}
+
+	public function json() {
+		echo json_encode(array(
+			'success' => $this->success(),
+			'error' => $this->error(),
+		)); die;
+	}
+}
+
+
+function wpska_response($success=false, $error=false) {
+
+	if ($error) {
+		$success = false;
+		$error = is_array($error)? $error: array($error);
+	}
+
+	else { $error=false; }
+
+	$error = empty($error)? false: $error;
+	return json_encode(array('success'=>$success, 'error'=>$error)); die;
+}
+
+
 
 
 function wpska_tab($title, $call) {
