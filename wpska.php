@@ -1,6 +1,11 @@
 <?php
 
-//if ($_SERVER['REMOTE_ADDR']!='177.128.29.4') return;
+
+/*if (isset($_GET['wpska_js'])): header('Content-Type: application/javascript'); ?>
+<?php die; endif;
+
+else if (isset($_GET['wpska_js'])): header('Content-Type: application/javascript'); ?>
+<?php die; endif;*/
 
 
 

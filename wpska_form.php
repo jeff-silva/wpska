@@ -46,13 +46,13 @@ A mensagem de agradecimento é escrita diretamente dentro dela, ou seja, não é
 
 
 
-function wpska_form_contact($form_id, $content=null, $attrs=null) {
+function wpska_contact($form_id, $content=null, $attrs=null) {
 	return wpska_form($form_id, $content, $attrs, array('post_type'=>'wpska_contact'));
 }
 
 
 
-function wpska_form_newsletter($form_id, $content=null, $attrs=null) {
+function wpska_newsletter($form_id, $content=null, $attrs=null) {
 	return wpska_form($form_id, $content, $attrs, array('post_type'=>'wpska_newsletter'));
 }
 
