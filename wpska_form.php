@@ -315,6 +315,7 @@ class Wpska_Form_Actions
 				),
 				'public' => true,
 				'has_archive' => true,
+				'menu_icon' => 'dashicons-format-status',
 			));
 		}
 
@@ -326,6 +327,7 @@ class Wpska_Form_Actions
 				),
 				'public' => true,
 				'has_archive' => true,
+				'menu_icon' => 'dashicons-email-alt',
 			));
 		}
 	}
