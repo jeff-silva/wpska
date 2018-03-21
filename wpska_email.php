@@ -1,23 +1,22 @@
 <?php
 
 
-if (isset($_REQUEST['wpska_email_test'])) {
-	add_action('init', function() {
-		$headers = array('Content-Type: text/html; charset=UTF-8');
-		$sent = wp_mail($_REQUEST['to'], 'E-mail test', $_REQUEST['message'], $headers);
-		dd($sent, $_REQUEST);
-		die;
-	});
-}
-
 
 class Wpska_Email_Ajax extends Wpska_Ajax
 {
 	public function wpska_email_test()
 	{
-		return array(
-			'rand' => rand(),
-		);
+		if (! filter_var($_REQUEST['to'])) {
+			$this->error('E-mail inválido');
+		}
+
+		if (! $_REQUEST['message']) {
+			$this->error('Mensagem vazia');
+		}
+
+		if (! $this->error()) {
+			return wp_mail($_REQUEST['to'], 'E-mail test', $_REQUEST['message']);
+		}
 	}
 }
 
@@ -43,11 +42,11 @@ class Wpska_Email_Actions extends Wpska_Actions
 			<?php if ($wpska_email): ?>
 			<div class="col-sm-8">
 				<?php $wpska_email_template = get_option('wpska_email_template', '{$content}');
-				wp_editor($wpska_email_template, 'wpska_email_template'); ?>
+				wp_editor($wpska_email_template, 'wpska_email_template', 'editor_height=300'); ?>
 				<br><small>Não se esqueça de inserir a variável {$content}, ela representa a mensagem enviada.</small>
 			</div>
 
-			<div class="col-sm-4 form-group">
+			<div class="col-sm-4 form-group wpska_email_test">
 				<label>Testar envio</label>
 				<input type="text" id="wpska_email_test_to" class="form-control" placeholder="Enviar para" onkeydown="if (event.keyCode==13) wpska_email_test_send(event);"><br>
 				<textarea class="form-control" id="wpska_email_test_message" placeholder="Mensagem"></textarea>
@@ -61,13 +60,18 @@ class Wpska_Email_Actions extends Wpska_Actions
 					var $=jQuery;
 					if (ev) ev.preventDefault();
 					var post = {
-						wpska_email_test: true,
+						wpska: "wpska_email_test",
 						to: $("#wpska_email_test_to").val(),
 						message: $("#wpska_email_test_message").val(),
 					};
+					$(".wpska_email_test").css({opacity:.5});
 					$.post("<?php echo site_url(); ?>", post, function(resp) {
-						$("#wpska_email_test_response").html(resp);
-					});
+						$(".wpska_email_test").css({opacity:1});
+						var str = '<div class="alert alert-danger">Erro desconhecido</div>';
+						if (resp.error) str = '<div class="alert alert-danger">'+ resp.error.join('<br />') +'</div>';
+						if (resp.success) str = '<div class="alert alert-success">E-mail enviado</div>';
+						$("#wpska_email_test_response").html(str);
+					}, "json");
 				};
 				</script>
 			</div>
@@ -85,6 +89,9 @@ class Wpska_Email_Filters extends Wpska_Filters
 	{
 		$wpska_email_template = get_option('wpska_email_template', '{$content}');
 		$args['message'] = str_replace('{$content}', $args['message'], $wpska_email_template);
+		$args['headers'] = isset($args['headers'])? $args['headers']: array();
+		$args['headers'] = is_array($args['headers'])? $args['headers']: array();
+		$args['headers'][] = 'Content-Type: text/html; charset=UTF-8';
 		return $args;
 	}
 }
