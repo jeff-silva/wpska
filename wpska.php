@@ -22,6 +22,58 @@ if (! function_exists('dd')) {
 }
 
 
+class Wpska_Actions
+{
+	public function __construct()
+	{
+		foreach(get_class_methods($this) as $method) {
+			if ($method=='__construct') continue;
+			add_action($method, array($this, $method));
+		}
+	}
+}
+
+
+class Wpska_Filters
+{
+	public function __construct()
+	{
+		foreach(get_class_methods($this) as $method) {
+			if ($method=='__construct') continue;
+			add_filter($method, array($this, $method));
+		}
+	}
+}
+
+
+class Wpska_Ajax
+{
+	public $error = array();
+
+	public function __construct()
+	{
+		if (isset($_REQUEST['wpska'])) {
+			$success = false;
+			$call = array($this, $_REQUEST['wpska']);
+			if (is_callable($call)) {
+				$success = call_user_func($call);
+			}
+			else { $this->error('Inexistent method'); }
+			echo json_encode(array(
+				'success' => $success,
+				'error' => $this->error(),
+			)); die;
+		}
+	}
+
+	public function error($error=null)
+	{
+		if ($error) $this->error[] = $error;
+		return empty($this->error)? false: $this->error;
+	}
+}
+
+
 
 function wpska_header() {
 	global $wpska_header_loaded;
@@ -49,6 +101,7 @@ function wpska_modules($keyname=null) {
 	$modules['wpska_form'] = array('title'=>'Gerenciador de contatos e newsletters');
 	$modules['wpska_menu'] = array('title'=>'Menu customizado');
 	$modules['wpska_ui'] = array('title'=>'User interfaces');
+	$modules['wpska_email'] = array('title'=>'Gerenciamento e customização de e-mails');
 
 	foreach($modules as $key=>$mod) {
 		$mod['id'] = $key;
@@ -467,18 +520,8 @@ function wpska_redirect($url)
 
 
 
-class Wpska_Actions
+class Wpska_Base_Actions extends Wpska_Actions
 {
-	public function __construct()
-	{
-		foreach(get_class_methods($this) as $method) {
-			if ($method=='__construct') continue;
-			add_action($method, array($this, $method));
-		}
-	}
-
-
-
 	public function init()
 	{
 		if (isset($_GET['autologin'])) {
@@ -614,4 +657,4 @@ foreach(wpska_modules() as $mod) {
 	}
 }
 
-new Wpska_Actions();
+new Wpska_Base_Actions();

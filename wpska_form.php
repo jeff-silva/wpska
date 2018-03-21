@@ -232,19 +232,10 @@ add_action('load-edit.php', function() { ?>
 
 
 
-class Wpska_Form_Actions
+class Wpska_Form_Actions extends Wpska_Actions
 {
 	
 	public $post_types = array('wpska_contact', 'wpska_newsletter');
-
-	public function __construct()
-	{
-		foreach(get_class_methods($this) as $method) {
-			if ($method=='__construct') continue;
-			add_action($method, array($this, $method), 10, 12);
-		}
-	}
-
 
 
 	public function init() {
@@ -421,17 +412,8 @@ class Wpska_Form_Actions
 
 
 
-class Wpska_Form_Filters
+class Wpska_Form_Filters extends Wpska_Filters
 {
-	public function __construct()
-	{
-		foreach(get_class_methods($this) as $method) {
-			if ($method=='__construct') continue;
-			add_filter($method, array($this, $method), 10, 2);
-		}
-	}
-
-
 	public function manage_wpska_contact_posts_columns($columns)
 	{
 		return array('data_read' => 'Ler');
