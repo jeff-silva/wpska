@@ -53,16 +53,8 @@ class Wpska_Ajax
 	public function __construct()
 	{
 		if (isset($_REQUEST['wpska'])) {
-			$success = false;
-			$call = array($this, $_REQUEST['wpska']);
-			if (is_callable($call)) {
-				$success = call_user_func($call);
-			}
-			else { $this->error('Inexistent method'); }
-			echo json_encode(array(
-				'success' => $success,
-				'error' => $this->error(),
-			)); die;
+			$call = array($this, 'init');
+			add_action('init', $call, 0);
 		}
 	}
 
@@ -70,6 +62,18 @@ class Wpska_Ajax
 	{
 		if ($error) $this->error[] = $error;
 		return empty($this->error)? false: $this->error;
+	}
+
+	public function init()
+	{
+		$success = false;
+		$call = array($this, $_REQUEST['wpska']);
+		if (is_callable($call)) { $success = call_user_func($call); }
+		else { $this->error('Inexistent method'); }
+		echo json_encode(array(
+			'success' => $success,
+			'error' => $this->error(),
+		)); die;
 	}
 }
 
@@ -87,7 +91,7 @@ function wpska_header() {
 	</script>
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-	<style>select.form-control {padding:7px; height:auto;}</style>
+	<style>.wp-admin select.form-control {padding:7px; height:auto;}</style>
 	<?php
 
 	$wpska_header_loaded=true;
@@ -565,7 +569,16 @@ class Wpska_Base_Actions extends Wpska_Actions
 	{
 		if (isset($_POST['wpska-settings'])) {
 			unset($_POST['wpska-settings']);
+
+			// $stripslashes = array('wpska_email_template');
+			// foreach($stripslashes as $key) {
+			// 	if (isset($_POST[$key])) {
+			// 		$_POST[$key] = stripslashes($_POST[$key]);
+			// 	}
+			// }
+
 			foreach($_POST as $key=>$val) {
+				$val = stripslashes($val);
 				update_option($key, $val, true);
 			}
 			wpska_redirect('back');

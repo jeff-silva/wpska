@@ -89,6 +89,7 @@ class Wpska_Email_Filters extends Wpska_Filters
 	{
 		$wpska_email_template = get_option('wpska_email_template', '{$content}');
 		$args['message'] = str_replace('{$content}', $args['message'], $wpska_email_template);
+		$args['message'] = nl2br($args['message']);
 		$args['headers'] = isset($args['headers'])? $args['headers']: array();
 		$args['headers'] = is_array($args['headers'])? $args['headers']: array();
 		$args['headers'][] = 'Content-Type: text/html; charset=UTF-8';
