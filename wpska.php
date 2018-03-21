@@ -77,9 +77,9 @@ class Wpska_Ajax
 	}
 
 
-	public function param($key)
+	public function param($key, $default=false)
 	{
-		return isset($_REQUEST[$key])? $_REQUEST[$key]: null;
+		return isset($_REQUEST[$key])? $_REQUEST[$key]: $default;
 	}
 }
 

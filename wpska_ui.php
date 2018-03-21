@@ -124,11 +124,36 @@ class Wpska_Ui
 			'wpska_ui_frete' => '1',
 		));
 
+		$value = json_decode($value, true);
+		$value = is_array($value)? $value: array();
+		$value['params'] = isset($value['params'])? $value['params']: array();
+		$value['params'] = is_array($value['params'])? $value['params']: array();
+		$value['params'] = array_merge(array(
+			'nCdEmpresa' => '',
+			'sDsSenha' => '',
+			'sCepOrigem' => '',
+			'sCepDestino' => '',
+			'nVlPeso' => '0',
+			'nCdFormato' => '1',
+			'nVlComprimento' => '0',
+			'nVlAltura' => '0',
+			'nVlLargura' => '0',
+			'sCdMaoPropria' => 'n',
+			'nVlValorDeclarado' => '0',
+			'sCdAvisoRecebimento' => 'n',
+			'nCdServico' => '', //41106:PAC, 40010:Sedex, 40045:Sedex a cobrar, 40215:Sedex10
+			'nVlDiametro' => '0',
+			'StrRetorno' => 'xml',
+		), $value['params']);
+
+		$value['values'] = isset($value['values'])? $value['values']: array();
+		$value['values'] = is_array($value['values'])? $value['values']: array();
+
 		wpska_header();
 		?><div id="<?php echo $params['id']; ?>" class="wpska-ui-frete">
-			<textarea style="display:none;">{{ response||[] }}</textarea>
+			<textarea style="display:none;">{{ value }}</textarea>
 			<div class="input-group">
-				<input type="text" class="form-control wpska-ui-frete-input" @keydown.prevent.13="_calculate();" v-model="post.sCepDestino">
+				<input type="text" class="form-control wpska-ui-frete-input" @keydown.prevent.13="_calculate();" v-model="value.params.sCepDestino">
 				<div class="input-group-btn">
 					<button type="button" class="btn btn-default wpska-ui-frete-btn" @click="_calculate();">
 						<span v-if="loading"><i class="fa fa-fw fa-spin fa-spinner"></i> Calculando</span>
@@ -136,15 +161,15 @@ class Wpska_Ui
 					</button>
 				</div>
 			</div>
-			<table class="table" v-if="response">
+			<table class="table" v-if="value.values" style="display:none;">
 				<thead><tr><th>Tipo</th><th>Valor</th><th>Prazo</th></tr></thead>
 				<tbody>
-					<tr v-if="!response">
+					<tr v-if="value.values.length==0">
 						<td class="text-muted text-center">
 							Nada encontrado
 						</td>
 					</tr>
-					<tr v-for="serv in response">
+					<tr v-for="serv in value.values">
 						<td>{{ serv.CodigoNome }}</td>
 						<td>R${{ serv.Valor }}</td>
 						<td>{{ serv.PrazoEntrega }} dias úteis</td>
@@ -157,16 +182,19 @@ class Wpska_Ui
 			el: "#<?php echo $params['id']; ?>",
 			data: {
 				loading: false,
-				post: <?php echo json_encode($params); ?>,
-				response: false,
+				value: <?php echo json_encode($value); ?>,
 			},
 			methods: {
 				_calculate: function() {
-					var app=this, $=jQuery;
+					var app=this, $=jQuery, $parent=$("#<?php echo $params['id']; ?>");
 					app.loading = true;
-					$.get("<?php echo site_url(); ?>", app.post, function(resp) {
+					app.value.wpska = "wpska_ui_frete";
+					$parent.css({opacity:.5});
+					$.get("<?php echo site_url('/'); ?>", app.value, function(resp) {
 						app.loading = false;
-						app.response = resp.success;
+						$parent.find("table").fadeIn(200);
+						$parent.css({opacity:1});
+						Vue.set(app, "value", resp.success);
 					}, "json");
 				},
 			},
@@ -183,48 +211,6 @@ class Wpska_Ui
 // add_action('wp_footer', 'wpska_action_footer');
 
 
-
-if (isset($_REQUEST['wpska_ui_frete'])) {
-	add_action('init', function() {
-		unset($_REQUEST['wpska_ui_frete']);
-
-		$params = array_filter($_REQUEST, function($val) { return $val; });
-		$params = array_merge(array(
-			'nCdEmpresa' => '',
-			'sDsSenha' => '',
-			'sCepOrigem' => '04320-040',
-			'sCepDestino' => '',
-			'nVlPeso' => '0.500',
-			'nCdFormato' => '1',
-			'nVlComprimento' => '16',
-			'nVlAltura' => '11',
-			'nVlLargura' => '11',
-			'sCdMaoPropria' => 'n',
-			'nVlValorDeclarado' => '0',
-			'sCdAvisoRecebimento' => 'n',
-			'nCdServico' => '41106,40010,40215', //41106:PAC, 40010:Sedex, 40045:Sedex a cobrar, 40215:Sedex10
-			'nVlDiametro' => '0',
-			'StrRetorno' => 'xml',
-		), $params);
-
-		$url = 'http://ws.correios.com.br/calculador/CalcPrecoPrazo.aspx?'.http_build_query($params);
-		$xml = simplexml_load_file($url);
-
-		$data = array();
-		foreach($xml->cServico as $serv) {
-			if ($serv->Erro !=0) continue;
-			if ($serv->Codigo=='41106') $serv->CodigoNome='PAC';
-			else if ($serv->Codigo=='40010') $serv->CodigoNome='SEDEX';
-			else if ($serv->Codigo=='40045') $serv->CodigoNome='SEDEX a cobrar';
-			else if ($serv->Codigo=='40215') $serv->CodigoNome='SEDEX 10';
-			$data[] = $serv;
-		}
-
-		$resp = new Wpska_Response();
-		$resp->success($data);
-		$resp->json();
-	});
-}
 
 
 class Wpska_Ui_Actions extends Wpska_Actions
@@ -249,6 +235,45 @@ class Wpska_Ui_Actions extends Wpska_Actions
 
 class Wpska_Ui_Ajax extends Wpska_Ajax
 {
+	public function wpska_ui_frete()
+	{
+		$params = $this->param('params', array());
+		$params = array_filter($params, function($val) { return $val; });
+		$params = array_merge(array(
+			'nCdEmpresa' => '',
+			'sDsSenha' => '',
+			'sCepOrigem' => '01505-010',
+			'sCepDestino' => '',
+			'nVlPeso' => '0.500',
+			'nCdFormato' => '1',
+			'nVlComprimento' => '16',
+			'nVlAltura' => '11',
+			'nVlLargura' => '11',
+			'sCdMaoPropria' => 'n',
+			'nVlValorDeclarado' => '0',
+			'sCdAvisoRecebimento' => 'n',
+			'nCdServico' => '41106,40010,40215', //41106:PAC, 40010:Sedex, 40045:Sedex a cobrar, 40215:Sedex10
+			'nVlDiametro' => '0',
+			'StrRetorno' => 'xml',
+		), $params);
+
+		$url = 'http://ws.correios.com.br/calculador/CalcPrecoPrazo.aspx?'.http_build_query($params);
+		$xml = simplexml_load_file($url);
+
+		$values = $this->param('values', array());
+		foreach($xml->cServico as $serv) {
+			if ($serv->Erro !=0) continue;
+			if ($serv->Codigo=='41106') $serv->CodigoNome='PAC';
+			else if ($serv->Codigo=='40010') $serv->CodigoNome='SEDEX';
+			else if ($serv->Codigo=='40045') $serv->CodigoNome='SEDEX a cobrar';
+			else if ($serv->Codigo=='40215') $serv->CodigoNome='SEDEX 10';
+			$values[] = $serv;
+		}
+
+		return array('params'=>$params, 'values'=>$values);
+	}
+
+
 	public function wpska_ui_address_search()
 	{
 		if (! function_exists('google_places_search')) {
