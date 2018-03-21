@@ -1,5 +1,8 @@
 <?php
 
+/* TODO:
+- Inserir opção de limpar caches específicos;
+*/
 
 /*if (isset($_GET['wpska_js'])): header('Content-Type: application/javascript'); ?>
 <?php die; endif;

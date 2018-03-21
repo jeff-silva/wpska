@@ -145,7 +145,10 @@ function wpska_contact($form_id, $content=null) {
 		return false;
 	};
 	</script>
-	<style>.wpska-form-success, .wpska-form-error {display:none;}</style>
+	<style>
+	.wpska-form-success, .wpska-form-error {display:none;}
+	.wpska-form-loading {opacity:.5;}
+	</style>
 	<?php
 }
 
@@ -208,7 +211,10 @@ function wpska_newsletter($form_id, $content=null, $attrs=null) {
 		return false;
 	};
 	</script>
-	<style>.wpska-form-success, .wpska-form-error {display:none;}</style>
+	<style>
+	.wpska-form-success, .wpska-form-error {display:none;}
+	.wpska-form-loading {opacity:.5;}
+	</style>
 	<?php
 }
 

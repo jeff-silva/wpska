@@ -1,5 +1,10 @@
 <?php
 
+/* TODO:
+- Criar a possibilidade de estilizar um menu, colocando na url #algum-id no editor, e posteriormente,
+criar o html para todas as opções com esse ID.
+*/
+
 
 class Wpska_Walker extends Walker_Nav_Menu
 {
