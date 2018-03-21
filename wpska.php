@@ -75,6 +75,12 @@ class Wpska_Ajax
 			'error' => $this->error(),
 		)); die;
 	}
+
+
+	public function param($key)
+	{
+		return isset($_REQUEST[$key])? $_REQUEST[$key]: null;
+	}
 }
 
 
