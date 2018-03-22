@@ -90,17 +90,12 @@ function wpska_header() {
 	global $wpska_header_loaded;
 	if ($wpska_header_loaded) return null;
 
-	if (! file_exists(__DIR__ . '/wpska.js')) {
-		$content = wpska_content('https://raw.githubusercontent.com/jeff-silva/wpska/master/wpska.php');
-		file
-	}
-
 	$base_url = str_replace(ABSPATH, '', __DIR__);
 	$base_url = str_replace('\\', '/', $base_url);
 
 	?>
 	<script src="https://gitcdn.link/repo/jeff-silva/wpska/master/wpska.js"></script>
-	<link rel="stylesheet" href="https://raw.githubusercontent.com/jeff-silva/wpska/master/wpska.css">
+	<link rel="stylesheet" href="https://gitcdn.link/repo/jeff-silva/wpska/master/wpska.css">
 	<?php
 
 	$wpska_header_loaded=true;
