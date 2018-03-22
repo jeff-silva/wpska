@@ -22,6 +22,7 @@ if (! function_exists('dd')) {
 }
 
 
+
 class Wpska_Actions
 {
 	public function __construct()
@@ -89,12 +90,12 @@ function wpska_header() {
 	global $wpska_header_loaded;
 	if ($wpska_header_loaded) return null;
 
+	$base_url = str_replace(ABSPATH, '', __DIR__);
+	$base_url = str_replace('\\', '/', $base_url);
+
 	?>
-	<script>
-	window.jQuery || document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>');
-	jQuery.fn.modal || document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"><\/script>');
-	window.Vue || document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.16/vue.min.js"><\/script>');
-	</script>
+	<script src="<?php echo site_url("{$base_url}/wpska.js"); ?>"></script>
+	<link rel="stylesheet" href="<?php echo site_url("{$base_url}/wpska.css"); ?>">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 	<style>.wp-admin select.form-control {padding:7px; height:auto;}</style>
@@ -190,7 +191,7 @@ function wpska_response($success=false, $error=false) {
 function wpska_tab($title, $call) {
 	global $wpska_tab;
 	$wpska_tab = is_array($wpska_tab)? $wpska_tab: array();
-	$id = 'tab' . md5($title . sizeof($wpska_tab));
+	$id = 'tab' . md5($title . rand());
 	$wpska_tab[] = array('id'=>$id, 'title'=>$title, 'call'=>$call);
 }
 
@@ -630,6 +631,17 @@ class Wpska_Base_Actions extends Wpska_Actions
 			</div>
 		</div>
 		<?php });
+	}
+
+
+
+	public function wp_footer() {
+		echo do_action('wpska_footer');
+	}
+
+
+	public function admin_footer() {
+		echo do_action('wpska_footer');
 	}
 
 

@@ -4,6 +4,52 @@
 https://github.com/jeff-silva/520/blob/master/helpers-ui.php
 */
 
+
+function wpska_ui_posts_query($query=array()) {
+	/*
+	s:
+	post_type:
+	post__in:
+	post_parent__in:
+	author__in:
+	category__in:
+	tag:
+	posts_per_page:
+	orderby:
+	order:
+	tax_query:
+	*/
+
+	$query = array_merge(array(
+		'post_type' => array(),
+		'posts_per_page' => 12,
+		'orderby' => 'ID',
+		'order' => 'DESC',
+	), $query);
+
+	if (! is_array($query['post_type'])) {
+		$query['post_type'] = array('any');
+	}
+
+	if (empty($query['post_type'])) {
+		$query['post_type'] = array('any');
+	}
+	else if (sizeof($query['post_type'])>1) {
+		foreach($query['post_type'] as $i=>$post_type) {
+			if ($post_type=='any') unset($query['post_type'][$i]);
+		}
+	}
+	$query['post_type'] = array_values($query['post_type']);
+
+	$query['posts_per_page'] = intval($query['posts_per_page']);
+
+	if ($query['order']=='RAND') {
+		$query['order'] = '';
+		$query['orderby'] = 'RAND';
+	}
+	return $query;
+}
+
 class Wpska_Ui
 {
 
@@ -72,6 +118,9 @@ class Wpska_Ui
 			</div>
 			<textarea name="<?php echo $params['name']; ?>" style="display:none;">{{ value }}</textarea>
 		</div>
+		<?php
+
+		add_action('wpska_footer', function() use($value, $params, $default) { ?>
 		<script>
 		new Vue({
 			el: "#<?php echo $params['id']; ?>",
@@ -93,15 +142,113 @@ class Wpska_Ui
 			},
 		});
 		</script>
-		<?php
+		<?php });
 	}
 
 
 	static function uploader($value=null, $params=null) { echo '<input type="text" class="form-control" value="uploader">'; }
 	static function upload($value=null, $params=null) { echo '<input type="text" class="form-control" value="upload">'; }
 	static function uploads($value=null, $params=null) { echo '<input type="text" class="form-control" value="uploads">'; }
-	static function posts($value=null, $params=null) { echo '<input type="text" class="form-control" value="posts">'; }
 	static function icon($value=null, $params=null) { echo '<input type="text" class="form-control" value="icon">'; }
+	
+
+	static function posts($value=null, $params=null) {
+
+		$params = self::_params($params, array());
+
+		$value = json_decode($value, true);
+		$value = is_array($value)? $value: array();
+		$value = wpska_ui_posts_query($value);
+
+		wpska_header();
+		?>
+		<div class="wpska-ui-posts" id="<?php echo $params['id']; ?>">
+			<div class="row">
+				<div class="col-sm-6">
+					<?php wpska_tab('Básico', function() { ?>
+					<div class="form-group">
+						<label>Post type</label>
+						<?php foreach(get_post_types() as $post_type): ?>
+						<label style="display:block;">
+							<input type="checkbox" v-model="value.post_type" value="<?php echo $post_type; ?>">
+							<span><?php echo $post_type; ?></span>
+						</label>
+						<?php endforeach; ?>
+					</div>
+					<?php }); ?>
+					<?php // wpska_tab('Categorias', 'Categorias'); ?>
+					<?php // wpska_tab('Meta', 'Meta'); ?>
+					<?php wpska_tab('Resultado', function() { ?>
+					<div class="form-group">
+						<label>Resultados por página</label>
+						<input type="text" v-model="value.posts_per_page" class="form-control">
+					</div>
+					<div class="form-group">
+						<label>Ordenado por</label>
+						<div class="input-group">
+							<input type="text" v-model="value.orderby" class="form-control">
+							<div class="input-group-btn" style="width:0;"></div>
+							<select class="form-control" v-model="value.order">
+								<option value="ASC">Crescente</option>
+								<option value="DESC">Decrescente</option>
+								<option value="RAND">Aleatório</option>
+							</select>
+						</div>
+					</div>
+					<?php }); ?>
+					<?php wpska_tab_render(); ?>
+					<div class="text-right">
+						<button type="button" class="btn btn-primary" @click="_search();">
+							<span v-if="loading">Pesquisando</span>
+							<span v-else>Pesquisar</span>
+						</button>
+					</div>
+				</div>
+				<div class="col-sm-6">
+					<div class="row">
+						<div class="col-xs-6" v-for="post in posts">
+							<div style="position:relative; width:100%; height:150px; overflow:hidden;" :style="'background:url('+post.thumbnail+') no-repeat center center; background-size:cover;'">
+								<div style="position:absolute; bottom:15px; right:15px; text-align:right; color:#fff; text-shadow:0px 0px 1px #000;">
+									<strong>{{ post.post_title }}</strong><br>
+									<small>{{ post.post_type }} #{{ post.ID }}</small>
+								</div>
+							</div><br>
+						</div>
+					</div>
+				</div>
+			</div>
+			<textarea name="<?php echo $params['name']; ?>">{{ value }}</textarea>
+		</div>
+		<?php
+
+		add_action('wpska_footer', function() use($value, $params) { ?>
+		<script>
+		new Vue({
+			el: "#<?php echo $params['id']; ?>",
+			data: {
+				loading: false,
+				value: <?php echo json_encode($value); ?>,
+				posts: [],
+			},
+			methods: {
+				_add: function(parent, data, end) {},
+				_remove: function(parent, data) {parent, data},
+				_search: function() {
+					var app=this, $=jQuery;
+					app.loading=true;
+					var params = {wpska:"wpska_ui_posts_search", value:app.value};
+					$.get("<?php echo site_url('/'); ?>", params, function(resp) {
+						app.loading=false;
+						Vue.set(app, "posts", resp.success.posts);
+						Vue.set(app, "value", resp.success.value);
+					}, "json");
+				},
+			},
+		});
+		</script>
+		<?php });
+
+	}
 
 
 	static function frete($value=null, $params=null) {
@@ -150,7 +297,9 @@ class Wpska_Ui
 		$value['values'] = is_array($value['values'])? $value['values']: array();
 
 		wpska_header();
-		?><div id="<?php echo $params['id']; ?>" class="wpska-ui-frete">
+		
+		?>
+		<div id="<?php echo $params['id']; ?>" class="wpska-ui-frete">
 			<textarea style="display:none;">{{ value }}</textarea>
 			<div class="input-group">
 				<input type="text" class="form-control wpska-ui-frete-input" @keydown.prevent.13="_calculate();" v-model="value.params.sCepDestino">
@@ -177,6 +326,9 @@ class Wpska_Ui
 				</tbody>
 			</table>
 		</div>
+		<?php
+
+		add_action('wpska_footer', function() use($value, $params) { ?>
 		<script>
 		new Vue({
 			el: "#<?php echo $params['id']; ?>",
@@ -200,7 +352,7 @@ class Wpska_Ui
 			},
 		});
 		</script>
-		<?php
+		<?php });
 	}
 
 }
@@ -222,7 +374,7 @@ class Wpska_Ui_Actions extends Wpska_Actions
 			<?php foreach(get_class_methods('Wpska_Ui') as $method):
 			if ($method=='_params') continue;
 			?>
-			<div class="col-sm-6 form-group">
+			<div class="col-sm-12 form-group">
 				<label><?php echo $method; ?></label>
 				<?php call_user_func(array('Wpska_Ui', $method)); ?>
 			</div>
@@ -351,6 +503,25 @@ class Wpska_Ui_Ajax extends Wpska_Ajax
 		}
 
 		return $return;
+	}
+
+
+	public function wpska_ui_posts_search()
+	{
+		$value = isset($_REQUEST['value'])? $_REQUEST['value']: array();
+		$value = is_array($value)? $value: array();
+		$value = wpska_ui_posts_query($value);
+
+		$posts = array();
+		foreach(get_posts($value) as $post) {
+			$post->thumbnail = wpska_thumbnail($post);
+			$posts[] = $post;
+		}
+
+		return array(
+			'value' => $value,
+			'posts' => $posts,
+		);
 	}
 }
 
