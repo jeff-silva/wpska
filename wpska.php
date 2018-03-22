@@ -90,15 +90,17 @@ function wpska_header() {
 	global $wpska_header_loaded;
 	if ($wpska_header_loaded) return null;
 
+	if (! file_exists(__DIR__ . '/wpska.js')) {
+		$content = wpska_content('https://raw.githubusercontent.com/jeff-silva/wpska/master/wpska.php');
+		file
+	}
+
 	$base_url = str_replace(ABSPATH, '', __DIR__);
 	$base_url = str_replace('\\', '/', $base_url);
 
 	?>
-	<script src="<?php echo site_url("{$base_url}/wpska.js"); ?>"></script>
-	<link rel="stylesheet" href="<?php echo site_url("{$base_url}/wpska.css"); ?>">
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-	<style>.wp-admin select.form-control {padding:7px; height:auto;}</style>
+	<script src="https://gitcdn.link/repo/jeff-silva/wpska/master/wpska.js"></script>
+	<link rel="stylesheet" href="https://raw.githubusercontent.com/jeff-silva/wpska/master/wpska.css">
 	<?php
 
 	$wpska_header_loaded=true;

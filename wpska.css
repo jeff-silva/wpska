@@ -11,3 +11,7 @@
 /* Popup modal */
 .popup {display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,.5); z-index:99999;}
 .popup>* {position:absolute; left:50%; top:50%; max-width:100%; transform:translate(-50%, -50%); box-shadow:5px 5px 30px 0px rgba(0,0,0,.5) !important; border-radius:0 !important; max-height:90%; overflow:auto;}
+
+
+/* Bugfixes */
+.wp-admin select.form-control {padding:7px; height:auto;}
