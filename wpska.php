@@ -22,11 +22,6 @@ if (! function_exists('dd')) {
 }
 
 
-if (isset($_GET['js'])) {
-	dd('aaa'); die;
-}
-
-
 
 class Wpska_Actions
 {
@@ -99,8 +94,8 @@ function wpska_header() {
 	$base_url = str_replace('\\', '/', $base_url);
 
 	?>
-	<script src="https://gitcdn.link/repo/jeff-silva/wpska/master/wpska.js"></script>
-	<link rel="stylesheet" href="https://gitcdn.link/repo/jeff-silva/wpska/master/wpska.css">
+	<script src="https://wpska.herokuapp.com/wpska.js"></script>
+	<link rel="stylesheet" href="https://wpska.herokuapp.com/wpska.css">
 	<?php
 
 	$wpska_header_loaded=true;
