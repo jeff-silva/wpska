@@ -1,2 +1,3 @@
-# wpska
-Wordpress Swiss Knife Army
+# Wpska - Swiss Knife Army
+Help:
+https://dashboard.heroku.com/apps/lampejo520
