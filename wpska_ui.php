@@ -217,7 +217,7 @@ class Wpska_Ui
 					</div>
 				</div>
 			</div>
-			<textarea name="<?php echo $params['name']; ?>">{{ value }}</textarea>
+			<textarea name="<?php echo $params['name']; ?>" style="display:none;">{{ value }}</textarea>
 		</div>
 		<?php
 

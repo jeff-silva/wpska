@@ -22,6 +22,11 @@ if (! function_exists('dd')) {
 }
 
 
+if (isset($_GET['js'])) {
+	dd('aaa'); die;
+}
+
+
 
 class Wpska_Actions
 {
