@@ -93,7 +93,6 @@ class Wpska_Ui
 		$value = is_array($value)? $value: array();
 		$value = array_merge($default, $value);
 
-		wpska_header();
 		?>
 		<div class="wpska-ui-address" id="<?php echo $params['id']; ?>">
 			<div class="row">
@@ -121,6 +120,7 @@ class Wpska_Ui
 		<?php
 
 		add_action('wpska_footer', function() use($value, $params, $default) { ?>
+		<?php wpska_header(); ?>
 		<script>
 		new Vue({
 			el: "#<?php echo $params['id']; ?>",
@@ -149,7 +149,63 @@ class Wpska_Ui
 	static function uploader($value=null, $params=null) { echo '<input type="text" class="form-control" value="uploader">'; }
 	static function upload($value=null, $params=null) { echo '<input type="text" class="form-control" value="upload">'; }
 	static function uploads($value=null, $params=null) { echo '<input type="text" class="form-control" value="uploads">'; }
-	static function icon($value=null, $params=null) { echo '<input type="text" class="form-control" value="icon">'; }
+	
+
+
+	static function icon($value=null, $params=null) {
+		$params = self::_params($params, array());
+		?>
+		<div class="wpska-ui-icon" id="<?php echo $params['id']; ?>">
+			<div class="input-group">
+				<input type="text" class="form-control wpska-ui-icon-input">
+				<div class="input-group-btn">
+					<button type="button" class="btn btn-default">
+						<i :class="value"></i>
+					</button>
+				</div>
+			</div>
+			<div style="position:relative; width:100%;">
+				<div class="wpska-ui-icon-options" style="position:absolute; top:0; left:0; width:100%; display:none; z-index:9;">
+					<button type="button" v-for="icon in icons" @click="value=icon;">
+						<i :class="icon"></i>
+					</button>
+				</div>
+			</div>
+		</div>
+		<?php
+
+		add_action('wpska_footer', function() use($value, $params) { ?>
+		<?php wpska_header(); ?>
+		<script>
+		new Vue({
+			el: "#<?php echo $params['id']; ?>",
+			data: {
+				value: "<?php echo $value; ?>",
+				icons: <?php echo json_encode(wpska_icons()); ?>,
+			},
+			mounted: function() {
+				var app=this, $=jQuery;
+				var $parent = $(app.$el);
+				var $input = $parent.find(".wpska-ui-icon-input");
+				var $options = $parent.find(".wpska-ui-icon-options");
+				$input.on("focus", function() {
+					$options.fadeIn(200);
+				});
+				$input.on("blur", function() {
+					setTimeout(function() {
+						$options.fadeOut(200);
+					}, 100);
+				});
+			},
+		});
+		</script>
+
+		<style>
+		.wpska-ui-icon-options {max-height:250px; overflow:auto;}
+		.wpska-ui-icon-options button {float:left; background:#fff; line-height:0px; width:37px; height:26px; border:solid 1px #bbb; margin:0px -1px -1px 0px; text-align:center; outline:none !important}
+		</style>
+		<?php });
+	}
 	
 
 	static function posts($value=null, $params=null) {
@@ -160,7 +216,6 @@ class Wpska_Ui
 		$value = is_array($value)? $value: array();
 		$value = wpska_ui_posts_query($value);
 
-		wpska_header();
 		?>
 		<div class="wpska-ui-posts" id="<?php echo $params['id']; ?>">
 			<div class="row">
@@ -222,6 +277,7 @@ class Wpska_Ui
 		<?php
 
 		add_action('wpska_footer', function() use($value, $params) { ?>
+		<?php wpska_header(); ?>
 		<script>
 		new Vue({
 			el: "#<?php echo $params['id']; ?>",
@@ -295,8 +351,6 @@ class Wpska_Ui
 
 		$value['values'] = isset($value['values'])? $value['values']: array();
 		$value['values'] = is_array($value['values'])? $value['values']: array();
-
-		wpska_header();
 		
 		?>
 		<div id="<?php echo $params['id']; ?>" class="wpska-ui-frete">
@@ -329,6 +383,7 @@ class Wpska_Ui
 		<?php
 
 		add_action('wpska_footer', function() use($value, $params) { ?>
+		<?php wpska_header(); ?>
 		<script>
 		new Vue({
 			el: "#<?php echo $params['id']; ?>",
