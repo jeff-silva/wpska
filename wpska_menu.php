@@ -5,131 +5,138 @@
 criar o html para todas as opções com esse ID.
 */
 
-
-class Wpska_Walker extends Walker_Nav_Menu
-{
-	
-	public $callbacks=array();
-	public function __construct($callbacks=array())
-	{
-		$this->callbacks = $callbacks;
-	}
-
-
-	public function start_el(&$output, $item, $depth=0, $args=array(), $id=0) {
-		$html = "<li><a href=\"{$item->url}\">{$item->title}</a>";
-		if (isset($this->callbacks['start_el']) AND is_callable($this->callbacks['start_el'])) {
-			ob_start();
-			echo call_user_func($this->callbacks['start_el'], $item, $depth, $args, $id);
-			$content = ob_get_clean();
-			if ($content) $html = $content;
-		}
-		$output .= $html;
-	}
-
-
-	public function end_el(&$output, $item, $depth=0, $args=array()) {
-		$html = "</li>";
-		if (isset($this->callbacks['end_el']) AND is_callable($this->callbacks['end_el'])) {
-			ob_start();
-			echo call_user_func($this->callbacks['end_el'], $item, $depth, $args);
-			$content = ob_get_clean();
-			if ($content) $html = $content;
-		}
-		$output .= $html;
-	}
-
-
-	public function start_lvl(&$output, $depth) {
-		$html = "<ul class=\"sub-menu\">";
-		if (isset($this->callbacks['start_lvl']) AND is_callable($this->callbacks['start_lvl'])) {
-			ob_start();
-			echo call_user_func($this->callbacks['start_lvl'], $depth);
-			$content = ob_get_clean();
-			if ($content) $html = $content;
-		}
-		$output .= $html;
-	}
-
-
-	public function end_lvl(&$output, $depth=0, $args=array()) {
-		$html = "</ul>";
-		if (isset($this->callbacks['end_lvl']) AND is_callable($this->callbacks['end_lvl'])) {
-			ob_start();
-			echo call_user_func($this->callbacks['end_lvl'], $depth, $args);
-			$content = ob_get_clean();
-			if ($content) $html = $content;
-		}
-		$output .= $html;
-	}
-}
-
-
-
 class Wpska_Menu
 {
-	
-	public $settings = array(
-        'container' => false,
-        'container_class' => '',
-        'container_id' => '',
-        'items_wrap' => '<ul class="%2$s">%3$s</ul>', //%3$s
-        'echo' => false,
-        'fallback_cb' => false,
-        'menu_class' => '',
-        'theme_location' => '',
-        'walker' => false,
-    );
+	public $theme_location = false;
+	public $ul_open = false;
+	public $ul_close = false;
+	public $li_open = false;
+	public $li_close = false;
 
-    public $callbacks = array(
-    	'start_el' => false,
-    	'end_el' => false,
-    	'start_lvl' => false,
-    	'end_lvl' => false,
-    );
-
-	public function __construct($theme_location, $settings=array())
+	public function __construct($theme_location)
 	{
-		$this->settings($settings);
-		$this->settings['theme_location'] = $theme_location;
+		$this->theme_location = $theme_location;
 	}
 
-	public function settings($settings=array()) {
-		$this->settings = array_merge($this->settings, $settings);
-	}
-
-	public function start_el($call=null) {
-		$this->callbacks['start_el'] = $call;
-	}
-	
-	public function end_el() {
-		$this->callbacks['end_el'] = $call;
-	}
-
-	public function start_lvl() {
-		$this->callbacks['start_lvl'] = $call;
-	}
-
-	public function end_lvl() {
-		$this->callbacks['end_lvl'] = $call;
-	}
-
-	public function render()
+	public function ul_open($callback)
 	{
-		$this->settings['walker'] = new Wpska_Walker($this->callbacks);
-		return wp_nav_menu($this->settings);
+		$this->ul_open = $callback;
 	}
 
-	public function renderBootstrap()
+	public function ul_close($callback)
 	{
-		$id = 'nav-'.rand();
-		$this->settings(array(
-			'items_wrap' => '<ul class="nav navbar-nav %2$s">%3$s</ul>',
-		));
+		$this->ul_close = $callback;
+	}
+
+	public function li_open($callback)
+	{
+		$this->li_open = $callback;
+	}
+
+	public function li_close($callback)
+	{
+		$this->li_close = $callback;
+	}
+
+
+	public function html($items, $level=0)
+	{
+		if (empty($items)) return null;
+
+		$this->ul_open = is_callable($this->ul_open)? $this->ul_open: function($item) {
+			return '<ul>';
+		};
+
+		$this->ul_close = is_callable($this->ul_close)? $this->ul_close: function($item) {
+			return '</ul>';
+		};
+
+		$this->li_open = is_callable($this->li_open)? $this->li_open: function($item) {
+			$class = implode(' ', $item->classes);
+			return "<li class=\"{$class}\"><a href='{$item->url}'>{$item->title}</a>";
+		};
+
+		$this->li_close = is_callable($this->li_close)? $this->li_close: function($item) {
+			return '</li>';
+		};
+
+		$content = call_user_func($this->ul_open, $items, $level);
+		$content .= "\n". str_repeat("\t", $level+1);
+		foreach($items as $item) {
+			$content .= call_user_func($this->li_open, $item, $level);
+			$content .= $this->html($item->children, $level+1);
+			$content .= call_user_func($this->li_close, $item, $level);
+			$content .= "\n". str_repeat("\t", $level+1);
+		}
+		$content .= call_user_func($this->ul_close, $items, $level);
+		return $content;
+	}
+
+	public function render($settings=null)
+	{
 		
-		ob_start();
-		?>
+		// Settings
+		if (! is_array($settings)) parse_str($settings, $settings);
+		$settings = array_merge(array(
+			'responsive' => false,
+			'social_icons' => false,
+		), $settings);
 
+
+		if (! function_exists('_wpska_menu_tree')) {
+			function _wpska_menu_tree(&$elements, $parentId=0, $depth=0) {
+			    $branch = array();
+			    foreach ( $elements as &$element )
+			    {
+			        if ( $element->menu_item_parent == $parentId )
+			        {
+			            $children = _wpska_menu_tree($elements, $element->ID, $depth+1);
+			        	$element->depth = $depth;
+			            $element->children = $children;
+
+			            $branch[$element->ID] = $element;
+			            unset( $element );
+			        }
+			    }
+			    return $branch;
+			}
+		}
+
+		$theme_location = $this->theme_location;
+		$items = get_nav_menu_locations();
+		$items = wp_get_nav_menu_items($items[$theme_location]);
+		$items = is_array($items)? $items: array();
+
+		
+		// Social icons parse
+		if ($settings['social_icons']) {
+			$icons = array(
+				'facebook.com' => array('name'=>'facebook', 'icon'=>'fa fa-fw fa-facebook'),
+				'twitter.com' => array('name'=>'twitter', 'icon'=>'fa fa-fw fa-twitter'),
+				'instagram.com' => array('name'=>'instagram', 'icon'=>'fa fa-fw fa-instagram'),
+				'youtube.com' => array('name'=>'youtube', 'icon'=>'fa fa-fw fa-youtube'),
+				'linkedin.com' => array('name'=>'linkedin', 'icon'=>'fa fa-fw fa-linkedin'),
+				'pinterest.com' => array('name'=>'pinterest', 'icon'=>'fa fa-fw fa-pinterest'),
+			);
+			foreach($items as $item) {
+				foreach($icons as $url=>$social) {
+					if (strpos($item->url, $url) !== false) {
+						$item->title = "<i class='{$social['icon']}'></i>";
+						$item->classes[] = $social['name'];
+						continue 2;
+					}
+				}
+			}
+		}
+		
+
+		$items = _wpska_menu_tree($items);
+
+
+
+		if (! $settings['responsive']): return $this->html($items);
+		else:
+		ob_start(); ?>
 		<nav class="navbar navbar-default">
 			<div class="container-fluid">
 				<div class="navbar-header">
@@ -141,13 +148,11 @@ class Wpska_Menu
 					</button>
 				</div>
 				<div id="<?php echo $id; ?>" class="navbar-collapse collapse">
-					<?php echo $this->render(); ?>
+					<?php echo $this->html($items); ?>
 				</div><!--/.nav-collapse -->
 			</div><!--/.container-fluid -->
-		</nav>
-
-		<?php
+		</nav><?php
 		return ob_get_clean();
+		endif;
 	}
 }
-
