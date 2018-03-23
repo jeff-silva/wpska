@@ -1,0 +1,13 @@
+{
+    "name": "Wpska",
+    "description": "Wpska",
+    "authors": [
+        {
+            "name": "Jeferson Inacio",
+            "email": "jeferson.i.silva@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.3"
+    }
+}
