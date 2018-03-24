@@ -23,6 +23,7 @@ if (! function_exists('dd')) {
 
 
 
+
 class Wpska_Actions
 {
 	public function __construct()
@@ -143,41 +144,30 @@ function wpska_modules($keyname=null) {
 }
 
 
-class Wpska_Response
-{
-	public $success=false;
-	public $error=array();
 
-	public function error($error=false) {
-		if ($error) $this->error[] = $error;
-		return empty($this->error)? false: $this->error;
+
+
+function wpska_keys($keyname=null) {
+	$keys = array(
+		'google_key' => 'AIzaSyB-Li2nMHdkyiJVLubSOtxZZEqGkmxRpvs',
+	);
+
+	if ($keyname) {
+		return isset($keys[$keyname])?
+			$keys[$keyname]: false;
 	}
 
-	public function success($success=false) {
-		if ($success) $this->success = $success;
-		return $this->success;
-	}
-
-	public function json() {
-		echo json_encode(array(
-			'success' => $this->success(),
-			'error' => $this->error(),
-		)); die;
-	}
+	return $keys;
 }
 
 
-function wpska_response($success=false, $error=false) {
 
-	if ($error) {
-		$success = false;
-		$error = is_array($error)? $error: array($error);
-	}
-
-	else { $error=false; }
-
-	$error = empty($error)? false: $error;
-	return json_encode(array('success'=>$success, 'error'=>$error)); die;
+function wpska_map($params=null, $attr='style="border:none;"') {
+	parse_str($params, $params);
+	$params = is_array($params)? $params: array();
+	$params['key'] = wpska_keys('google_key');
+	$params = http_build_query($params);
+	return "<iframe src='https://www.google.com/maps/embed/v1/place?{$params}' {$attr}></iframe>";
 }
 
 
@@ -301,7 +291,7 @@ function wpska_pagination($query) {
 
 
 
-function wpska_query($query, $cache='option') {
+function wpska_query_cache($query, $cache='option') {
 	if ('object'==gettype($query) AND 'WP_Query'==get_class($query)) {
 		return $query;
 	}
@@ -322,14 +312,16 @@ function wpska_query($query, $cache='option') {
 
 
 
-function wpska_posts($query=null, $callback=null, $settings=array()) {
+function wpska_query($query=null, $callback=null, $settings=null) {
 	global $post;
 
-	if (is_string($settings)) parse_str($settings, $settings);
+	if (!is_array($settings)) parse_str($settings, $settings);
 	$settings = is_array($settings)? $settings: array();
 	$settings = array_merge(array(
 		'cache' => get_option('wpska_cache', 3600),
+		'meta' => false,
 	), $settings);
+
 
 
 	// If $query is null, return current $post
@@ -348,12 +340,52 @@ function wpska_posts($query=null, $callback=null, $settings=array()) {
 	}
 
 	// Get $result
-	$result = wpska_query($query, $settings['cache']);
+	$result = wpska_query_cache($query, $settings['cache']);
 
 	if (sizeof($result->posts)>0) {
 		foreach($result->posts as $_post) {
 			if (is_callable($callback)) {
 				$post = $_post;
+
+				
+				$metas = array();
+				if ($settings['meta']) {
+					if ($settings['meta']=='*') {
+						foreach(get_post_meta($post->ID, '', false) as $metakey=>$values) {
+							if (isset($values[0])) $metas[ $metakey ] = $values[0];
+						}
+					}
+					else {
+						foreach(explode(',', $settings['meta']) as $metakey) {
+							$metas[ $metakey ] = get_post_meta($post->ID, $metakey, true);
+						}
+					}
+				}
+
+
+				foreach($metas as $key=>$val) {
+
+					if (!is_array($val)) {
+						// Detect json
+						$test = substr($val, 0, 1) . substr($val, -1);
+						if($test=='[]' OR $test=='{}') {
+							$arr = json_decode($val, true);
+							if (is_array($arr)) $val = $arr;
+						}
+					}
+
+					if (!is_array($val)) {
+						// Detect serialized
+						$test = substr($val, 0, 2);
+						if ($test=='a:') {
+							$arr = unserialize($val);
+							if (is_array($arr)) $val = $arr;
+						}
+					}
+
+					$post->{$key} = $val;
+				}
+
 				call_user_func($callback, $_post);
 			}
 		}

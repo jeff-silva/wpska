@@ -422,21 +422,7 @@ class Wpska_Ui
 
 class Wpska_Ui_Actions extends Wpska_Actions
 {
-	public function wpska_settings()
-	{
-		wpska_tab('UI', function() { ?>
-		<div class="row">
-			<?php foreach(get_class_methods('Wpska_Ui') as $method):
-			if ($method=='_params') continue;
-			?>
-			<div class="col-sm-12 form-group">
-				<label><?php echo $method; ?></label>
-				<?php call_user_func(array('Wpska_Ui', $method)); ?>
-			</div>
-			<?php endforeach; ?>
-		</div>
-		<?php });
-	}
+	//
 }
 
 
