@@ -185,6 +185,32 @@ class Wpska_Query
 
 
 
+
+class Wpska_Post
+{
+	
+	public $post=false;
+	public function __construct($_post=null)
+	{
+		global $post;
+		$this->post = $post;
+		if ($_post) $this->post = $_post;
+	}
+
+
+	public function content($callback)
+	{
+		global $post;
+		if (is_callable($callback)) {
+			$post = $this->post;
+			call_user_func($callback, $post);
+			wp_reset_postdata();
+		}
+	}
+}
+
+
+
 function wpska_header() {
 	global $wpska_header_loaded;
 	if ($wpska_header_loaded) return null;
