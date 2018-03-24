@@ -86,6 +86,104 @@ class Wpska_Ajax
 }
 
 
+class Wpska_Query
+{
+	
+	static $instance=false;
+	static function instance($query, $wpska_query_cache='option')
+	{
+		if (! self::$instance) {
+			self::$instance = new self($query, $wpska_query_cache);
+		}
+		return self::$instance;
+	}
+
+
+	public function __construct($query, $wpska_query_cache='option')
+	{
+		if (! is_array($query)) {
+			parse_str($query, $query);
+		}
+
+		if ($wpska_query_cache=='option') {
+			$wpska_query_cache = get_option('wpska_query_cache', 3600);
+		}
+
+		$result = array();
+		if ($wpska_query_cache>0) {
+			$cache_key = sprintf('wpska_query_cache_%s_%s', md5(serialize($query)), $wpska_query_cache);
+			$result = get_transient($cache_key);
+			if (! $result) {
+				$result = new WP_Query($query);
+				set_transient($cache_key, $result, $wpska_query_cache);
+			}
+		}
+		else {
+			$result = new WP_Query($query);
+		}
+
+		foreach($result as $key=>$val) {
+			$this->{$key} = $val;
+		}
+	}
+
+
+
+	public function loop($callback)
+	{
+		global $post;
+		if (!empty($this->posts) AND is_callable($callback)) {
+			foreach($this->posts as $_post) {
+				$post = $_post;
+				call_user_func($callback, $post);
+			}
+			wp_reset_postdata();
+		}
+		return $this;
+	}
+
+
+	public function notFound($callback)
+	{
+		if (empty($this->posts) AND is_callable($callback)) {
+			call_user_func($callback);
+		}
+		return $this;
+	}
+
+
+	public function pagination()
+	{
+		$big = 999999999;
+		$pages = paginate_links( array(
+				'base' => str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) ),
+				'format' => '?paged=%#%',
+				'current' => max( 1, get_query_var('paged') ),
+				'total' => $this->query->max_num_pages,
+				'type'  => 'array',
+				'prev_next'   => true,
+				'prev_text'    => __('«'),
+				'next_text'    => __('»'),
+			)
+		);
+
+		if( is_array( $pages ) ) {
+			$paged = ( get_query_var('paged') == 0 ) ? 1 : get_query_var('paged');
+
+			$pagination = '<ul class="pagination">';
+
+			foreach ( $pages as $page ) {
+				$pagination .= "<li>$page</li>";
+			}
+
+			$pagination .= '</ul>';
+
+			return $pagination;
+		}
+	}
+}
+
+
 
 function wpska_header() {
 	global $wpska_header_loaded;
@@ -288,114 +386,6 @@ function wpska_pagination($query) {
 		echo $pagination;
 	}
 }
-
-
-
-function wpska_query_cache($query, $cache='option') {
-	if ('object'==gettype($query) AND 'WP_Query'==get_class($query)) {
-		return $query;
-	}
-	if ($cache) {
-		if ($cache=='option') { $cache = get_option('wpska_cache', 3600); }
-		$cache_key = md5(serialize($query) . $cache);
-		$result = get_transient($cache_key);
-		if (! $result) {
-			$result = new WP_Query($query);
-			set_transient($cache_key, $result, $cache);
-		}
-		return $result;
-	}
-
-	return new WP_Query($query);
-}
-
-
-
-
-function wpska_query($query=null, $callback=null, $settings=null) {
-	global $post;
-
-	if (!is_array($settings)) parse_str($settings, $settings);
-	$settings = is_array($settings)? $settings: array();
-	$settings = array_merge(array(
-		'cache' => get_option('wpska_cache', 3600),
-		'meta' => false,
-	), $settings);
-
-
-
-	// If $query is null, return current $post
-	if (! $query) {
-		if (is_callable($callback)) {
-			setup_postdata($post);
-			call_user_func($callback, $post);
-			wp_reset_postdata();
-		}
-		return $post;
-	}
-
-	// If $query is numeric, get post by ID
-	if (is_numeric($query)) {
-		$query = array('p'=>$query, 'post_type'=>'any');
-	}
-
-	// Get $result
-	$result = wpska_query_cache($query, $settings['cache']);
-
-	if (sizeof($result->posts)>0) {
-		foreach($result->posts as $_post) {
-			if (is_callable($callback)) {
-				$post = $_post;
-
-				
-				$metas = array();
-				if ($settings['meta']) {
-					if ($settings['meta']=='*') {
-						foreach(get_post_meta($post->ID, '', false) as $metakey=>$values) {
-							if (isset($values[0])) $metas[ $metakey ] = $values[0];
-						}
-					}
-					else {
-						foreach(explode(',', $settings['meta']) as $metakey) {
-							$metas[ $metakey ] = get_post_meta($post->ID, $metakey, true);
-						}
-					}
-				}
-
-
-				foreach($metas as $key=>$val) {
-
-					if (!is_array($val)) {
-						// Detect json
-						$test = substr($val, 0, 1) . substr($val, -1);
-						if($test=='[]' OR $test=='{}') {
-							$arr = json_decode($val, true);
-							if (is_array($arr)) $val = $arr;
-						}
-					}
-
-					if (!is_array($val)) {
-						// Detect serialized
-						$test = substr($val, 0, 2);
-						if ($test=='a:') {
-							$arr = unserialize($val);
-							if (is_array($arr)) $val = $arr;
-						}
-					}
-
-					$post->{$key} = $val;
-				}
-
-				call_user_func($callback, $_post);
-			}
-		}
-		wp_reset_postdata();
-		return $result;
-	}
-	
-	return false;
-}
-
 
 
 
@@ -639,14 +629,14 @@ class Wpska_Base_Actions extends Wpska_Actions
 		<?php });
 
 
-		wpska_tab('Básico', function() { ?>
+		wpska_tab('Cache', function() { ?>
 		<div class="row">
 			<div class="col-xs-4 form-group">
 				<label>Cache de Query</label>
 				<div class="input-group">
-					<input type="text" name="wpska_cache" value="<?php echo get_option('wpska_cache', 3600); ?>" id="wpska_cache" class="form-control">
+					<input type="text" name="wpska_query_cache" value="<?php echo get_option('wpska_query_cache', 3600); ?>" id="wpska_query_cache" class="form-control">
 					<div class="input-group-btn" style="width:0px;"></div>
-					<select name="" class="form-control" onchange="var time=jQuery(this).val(); if (!time) return false; jQuery('#wpska_cache').val(time);" data-value="<?php echo get_option('wpska_cache', 3600); ?>">
+					<select name="" class="form-control" onchange="var time=jQuery(this).val(); if (!time) return false; jQuery('#wpska_query_cache').val(time);" data-value="<?php echo get_option('wpska_query_cache', 3600); ?>">
 						<option value="">Tempo predefinido</option>
 						<option value="1800">Meia Hora</option>
 						<option value="3600">1 Hora</option>
@@ -656,6 +646,7 @@ class Wpska_Base_Actions extends Wpska_Actions
 					</select>
 				</div>
 			</div>
+			<?php do_action('wpska_settings_cache'); ?>
 		</div>
 		<?php });
 	}

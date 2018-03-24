@@ -103,9 +103,25 @@ class Wpska_Menu
 		}
 
 		$theme_location = $this->theme_location;
-		$items = get_nav_menu_locations();
-		$items = wp_get_nav_menu_items($items[$theme_location]);
-		$items = is_array($items)? $items: array();
+		$result = array();
+
+		if ($wpska_cache_menu = get_option('wpska_cache_menu', 3600) AND !isset($_GET['customize_theme'])) {
+			$cache_key = "wpska_cache_menu_{$theme_location}_{$wpska_cache_menu}";
+			$result = get_transient($cache_key);
+
+			if (! $result) {
+				$items = get_nav_menu_locations();
+				$items = wp_get_nav_menu_items($items[$theme_location]);
+				$result = is_array($items)? $items: array();
+				set_transient($cache_key, $result, $wpska_cache_menu);
+			}
+		}
+		else {
+			$items = get_nav_menu_locations();
+			$items = wp_get_nav_menu_items($items[$theme_location]);
+			$result = is_array($items)? $items: array();
+		}
+
 
 		
 		// Social icons parse
@@ -118,7 +134,7 @@ class Wpska_Menu
 				'linkedin.com' => array('name'=>'linkedin', 'icon'=>'fa fa-fw fa-linkedin'),
 				'pinterest.com' => array('name'=>'pinterest', 'icon'=>'fa fa-fw fa-pinterest'),
 			);
-			foreach($items as $item) {
+			foreach($result as $item) {
 				foreach($icons as $url=>$social) {
 					if (strpos($item->url, $url) !== false) {
 						$item->title = "<i class='{$social['icon']}'></i>";
@@ -130,11 +146,11 @@ class Wpska_Menu
 		}
 		
 
-		$items = _wpska_menu_tree($items);
+		$result = _wpska_menu_tree($result);
 
 
 
-		if (! $settings['responsive']): return $this->html($items);
+		if (! $settings['responsive']): return $this->html($result);
 		else:
 		ob_start(); ?>
 		<nav class="navbar navbar-default">
@@ -148,7 +164,7 @@ class Wpska_Menu
 					</button>
 				</div>
 				<div id="<?php echo $id; ?>" class="navbar-collapse collapse">
-					<?php echo $this->html($items); ?>
+					<?php echo $this->html($result); ?>
 				</div><!--/.nav-collapse -->
 			</div><!--/.container-fluid -->
 		</nav><?php
@@ -156,3 +172,31 @@ class Wpska_Menu
 		endif;
 	}
 }
+
+
+
+class Wpska_Menu_Actions extends Wpska_Actions
+{
+	public function wpska_settings_cache()
+	{
+		$wpska_cache_menu = get_option('wpska_cache_menu', 3600);
+		?><div class="col-xs-6 form-group">
+			<label>Cache de menu</label>
+			<div class="input-group">
+				<input type="text" name="wpska_cache_menu" value="<?php echo $wpska_cache_menu; ?>" class="form-control" id="wpska_cache_menu">
+				<div class="input-group-btn" style="width:0px;"></div>
+				<select class="form-control" data-value="<?php echo $wpska_cache_menu; ?>" onchange="jQuery('#wpska_cache_menu').val( jQuery(this).val() );" data-value="<?php echo get_option('wpska_cache', 3600); ?>">
+					<option value="">Tempo predefinido</option>
+					<option value="1800">Meia Hora</option>
+					<option value="3600">1 Hora</option>
+					<option value="43200">12 Horas</option>
+					<option value="86400">1 Dia</option>
+					<option value="604800">1 Semana</option>
+				</select>
+			</div>
+		</div><?php
+	}
+}
+
+
+new Wpska_Menu_Actions();
