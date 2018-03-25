@@ -30,7 +30,7 @@ class Wpska_Actions
 	{
 		foreach(get_class_methods($this) as $method) {
 			if ($method=='__construct') continue;
-			add_action($method, array($this, $method));
+			add_action($method, array($this, $method), 10, 2);
 		}
 	}
 }
@@ -42,7 +42,7 @@ class Wpska_Filters
 	{
 		foreach(get_class_methods($this) as $method) {
 			if ($method=='__construct') continue;
-			add_filter($method, array($this, $method));
+			add_filter($method, array($this, $method), 10, 2);
 		}
 	}
 }
@@ -54,11 +54,17 @@ class Wpska_Ajax
 
 	public function __construct()
 	{
-		if (isset($_REQUEST['wpska'])) {
-			$call = array($this, 'init');
-			add_action('init', $call, 0);
+		$ignore = array(
+			'__construct', 'error', 'response', 'param',
+			'validateEmpty', 'validateEmail',
+		);
+		foreach(get_class_methods($this) as $method) {
+			if (in_array($method, $ignore)) continue;
+			add_action("wp_ajax_{$method}", array($this, 'response'));
+			add_action("wp_ajax_nopriv_{$method}", array($this, 'response'));
 		}
 	}
+
 
 	public function error($error=null)
 	{
@@ -66,22 +72,44 @@ class Wpska_Ajax
 		return empty($this->error)? false: $this->error;
 	}
 
-	public function init()
+
+	public function response()
 	{
-		$success = false;
-		$call = array($this, $_REQUEST['wpska']);
-		if (is_callable($call)) { $success = call_user_func($call); }
-		else { $this->error('Inexistent method'); }
+		$call = array($this, $_REQUEST['action']);
+		$success = call_user_func($call);
 		echo json_encode(array(
 			'success' => $success,
 			'error' => $this->error(),
-		)); die;
+		)); wp_die();
 	}
 
 
 	public function param($key, $default=false)
 	{
 		return isset($_REQUEST[$key])? $_REQUEST[$key]: $default;
+	}
+
+	public function validateEmpty($name, $error)
+	{
+		if (! $this->param($name)) {
+			$this->error($error);
+		}
+	}
+
+	public function validateEmail($name, $error)
+	{
+		if (! filter_var($this->param($name), FILTER_VALIDATE_EMAIL)) {
+			$this->error($error);
+		}
+	}
+
+	public function wpska_test()
+	{
+		return array(
+			'rand' => rand(),
+			'str_shuffle' => str_shuffle('abcdefghijklmnopqrstuvwxyz          '),
+			'methods' => get_class_methods($this),
+		);
 	}
 }
 

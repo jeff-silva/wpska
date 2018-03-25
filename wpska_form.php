@@ -75,7 +75,7 @@ function wpska_contact($form_id, $content=null) {
 		$success.hide(); $error.hide();
 		$form.addClass("wpska-form-loading");
 		$.ajax({
-			url: '<?php echo site_url('?wpska=wpska_contact'); ?>',
+			url: '<?php echo site_url('/wp-admin/admin-ajax.php?action=wpska_contact'); ?>',
 			type: 'post',
 			contentType: false,
 			processData: false,
@@ -141,7 +141,7 @@ function wpska_newsletter($form_id, $content=null, $attrs=null) {
 		$success.hide(); $error.hide();
 		$form.addClass("wpska-form-loading");
 		$.ajax({
-			url: '<?php echo site_url('?wpska=wpska_newsletter'); ?>',
+			url: '<?php echo site_url('/wp-admin/admin-ajax.php?action=wpska_newsletter'); ?>',
 			type: 'post',
 			contentType: false,
 			processData: false,
@@ -239,9 +239,7 @@ class Wpska_Form_Ajax extends Wpska_Ajax
 	public function wpska_newsletter()
 	{
 		// Email invalido
-		if (! filter_var($_REQUEST['email'], FILTER_VALIDATE_EMAIL)) {
-			$this->error('E-mail inválido');
-		}
+		$this->validateEmail('email', 'E-mail inválido');
 
 		// Email existente
 		$has_posts = sizeof(get_posts(array(
