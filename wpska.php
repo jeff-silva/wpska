@@ -86,7 +86,7 @@ class Wpska_Ajax
 }
 
 
-class Wpska_Query
+class Wpska_Posts
 {
 	
 	static $instance=false;
