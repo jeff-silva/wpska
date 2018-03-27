@@ -71,6 +71,37 @@ class Wpska_Ui
 	}
 
 
+	static function types()
+	{
+		$return = array();
+		foreach(get_class_methods(__CLASS__) as $method) {
+			if (in_array($method, array('_params', 'types'))) continue;
+			$return[] = array(
+				'title' => $method,
+				'method' => $method,
+			);
+		}
+		return $return;
+	}
+
+
+
+	static function text($value=null, $params=null)
+	{
+		$params = self::_params($params, array(
+			'type' => 'text',
+		));
+		echo "<input type='{$params['type']}' name='{$params['name']}' id='{$params['id']}' class='{$params['class']}' style='{$params['style']}' value='{$value}' >";
+	}
+
+
+	static function textarea($value=null, $params=null)
+	{
+		$params = self::_params($params, array());
+		echo "<textarea name='{$params['name']}' id='{$params['id']}' class='{$params['class']}'>{$value}</textarea>";
+	}
+
+
 	static function address($value=null, $params=null)
 	{
 		$params = self::_params($params, array());
@@ -149,6 +180,7 @@ class Wpska_Ui
 	static function uploader($value=null, $params=null) { echo '<input type="text" class="form-control" value="uploader">'; }
 	static function upload($value=null, $params=null) { echo '<input type="text" class="form-control" value="upload">'; }
 	static function uploads($value=null, $params=null) { echo '<input type="text" class="form-control" value="uploads">'; }
+	static function color($value=null, $params=null) { echo '<input type="text" class="form-control" value="color">'; }
 	
 
 

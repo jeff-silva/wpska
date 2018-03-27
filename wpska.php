@@ -164,17 +164,24 @@ class Wpska_Posts
 
 
 
-	public function loop($callback)
+	public function content($callback)
 	{
 		global $post;
 		if (!empty($this->posts) AND is_callable($callback)) {
 			foreach($this->posts as $_post) {
 				$post = $_post;
+				setup_postdata($_post);
 				call_user_func($callback, $post);
 			}
 			wp_reset_postdata();
 		}
 		return $this;
+	}
+
+
+	public function loop($callback)
+	{
+		return $this->content($callback);
 	}
 
 
@@ -244,6 +251,7 @@ class Wpska_Post
 		global $post;
 		if (is_callable($callback)) {
 			$post = $this->post;
+			setup_postdata($this->post);
 			call_user_func($callback, $post);
 			wp_reset_postdata();
 		}
@@ -274,6 +282,7 @@ function wpska_modules($keyname=null) {
 	$modules['wpska_menu'] = array('title'=>'Menu customizado');
 	$modules['wpska_ui'] = array('title'=>'User interfaces');
 	$modules['wpska_email'] = array('title'=>'Gerenciamento e customização de e-mails');
+	$modules['wpska_postbox'] = array('title'=>'Gerenciamento de postboxes.');
 
 	foreach($modules as $key=>$mod) {
 		$mod['id'] = $key;
@@ -653,6 +662,16 @@ class Wpska_Base_Actions extends Wpska_Actions
 		});	
 	}
 
+
+	public function save_post()
+	{
+		global $post;
+		if (isset($_POST['postmeta']) AND is_array($_POST['postmeta'])) {
+			foreach($_POST['postmeta'] as $key=>$val) {
+				if ($val) { update_post_meta($post->ID, $key, $val); }
+			}
+		}
+	}
 
 
 
