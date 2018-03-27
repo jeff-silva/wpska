@@ -49,7 +49,7 @@ class Wpska_Postbox_Actions extends Wpska_Actions
 								<br><br>
 								<draggable :list="postbox.fields" :options="{handle:'._handle'}">
 									<div class="panel panel-default" v-for="field in postbox.fields">
-										<div class="panel-heading _handle">::: {{ field.title }}</div>
+										<div class="panel-heading _handle" style="cursor:move;">::: {{ field.title }}</div>
 										<div class="panel-body">
 											<div class="row">
 												<div class="col-xs-6">
@@ -71,7 +71,7 @@ class Wpska_Postbox_Actions extends Wpska_Actions
 													<strong>Tipo</strong>
 													<select v-model="field.field_type" class="form-control">
 														<option value="">Nenhum</option>
-														<option :value="ui_type.title" v-for="ui_type in ui_types">{{ ui_type.title }}</option>
+														<option :value="ui_type.method" v-for="ui_type in ui_types">{{ ui_type.title }}</option>
 													</select>
 												</div>
 												<div class="col-xs-6"><br>

@@ -73,11 +73,21 @@ class Wpska_Ui
 
 	static function types()
 	{
+		$titles = array(
+			'text' => 'Texto simples',
+			'textarea' => 'Texto multilinha',
+			'address' => 'Endereço',
+			'color' => 'Cor',
+			'icon' => 'Ícone',
+			'posts' => 'Seletor de posts',
+			'frete' => 'Cálculo de frete',
+		);
+
 		$return = array();
 		foreach(get_class_methods(__CLASS__) as $method) {
 			if (in_array($method, array('_params', 'types'))) continue;
 			$return[] = array(
-				'title' => $method,
+				'title' => (isset($titles[$method])? $titles[$method]: $method),
 				'method' => $method,
 			);
 		}
