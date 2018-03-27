@@ -43,33 +43,34 @@ class Wpska_Menu
 	{
 		if (empty($items)) return null;
 
-		$this->ul_open = is_callable($this->ul_open)? $this->ul_open: function($item) {
+		$this->ul_open = is_callable($this->ul_open)? $this->ul_open: function($items, $level) {
 			return '<ul>';
 		};
 
-		$this->ul_close = is_callable($this->ul_close)? $this->ul_close: function($item) {
+		$this->ul_close = is_callable($this->ul_close)? $this->ul_close: function($items, $level) {
 			return '</ul>';
 		};
 
-		$this->li_open = is_callable($this->li_open)? $this->li_open: function($item) {
+		$this->li_open = is_callable($this->li_open)? $this->li_open: function($item, $level) {
 			$class = implode(' ', $item->classes);
 			return "<li class=\"{$class}\"><a href='{$item->url}'>{$item->title}</a>";
 		};
 
-		$this->li_close = is_callable($this->li_close)? $this->li_close: function($item) {
+		$this->li_close = is_callable($this->li_close)? $this->li_close: function($item, $level) {
 			return '</li>';
 		};
 
-		$content = call_user_func($this->ul_open, $items, $level);
-		$content .= "\n". str_repeat("\t", $level+1);
+		ob_start();
+		echo call_user_func($this->ul_open, $items, $level);
+		echo "\n". str_repeat("\t", $level+1);
 		foreach($items as $item) {
-			$content .= call_user_func($this->li_open, $item, $level);
-			$content .= $this->html($item->children, $level+1);
-			$content .= call_user_func($this->li_close, $item, $level);
-			$content .= "\n". str_repeat("\t", $level+1);
+			echo call_user_func($this->li_open, $item, $level);
+			echo $this->html($item->children, $level+1);
+			echo call_user_func($this->li_close, $item, $level);
+			echo "\n". str_repeat("\t", $level+1);
 		}
-		$content .= call_user_func($this->ul_close, $items, $level);
-		return $content;
+		echo call_user_func($this->ul_close, $items, $level);
+		return ob_get_clean();
 	}
 
 	public function render($settings=null)
@@ -146,30 +147,29 @@ class Wpska_Menu
 		}
 		
 
-		$result = _wpska_menu_tree($result);
+		$result = _wpska_menu_tree($result);		
 
+		if ($settings['responsive']) {
+			ob_start(); ?>
+			<nav class="navbar navbar-default">
+				<div class="container-fluid">
+					<div class="navbar-header">
+						<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#<?php echo $id; ?>" aria-expanded="false" aria-controls="navbar">
+							<span class="sr-only">Toggle navigation</span>
+							<span class="icon-bar"></span>
+							<span class="icon-bar"></span>
+							<span class="icon-bar"></span>
+						</button>
+					</div>
+					<div id="<?php echo $id; ?>" class="navbar-collapse collapse">
+						<?php echo $this->html($result); ?>
+					</div><!--/.nav-collapse -->
+				</div><!--/.container-fluid -->
+			</nav><?php
+			return ob_get_clean();
+		}
 
-
-		if (! $settings['responsive']): return $this->html($result);
-		else:
-		ob_start(); ?>
-		<nav class="navbar navbar-default">
-			<div class="container-fluid">
-				<div class="navbar-header">
-					<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#<?php echo $id; ?>" aria-expanded="false" aria-controls="navbar">
-						<span class="sr-only">Toggle navigation</span>
-						<span class="icon-bar"></span>
-						<span class="icon-bar"></span>
-						<span class="icon-bar"></span>
-					</button>
-				</div>
-				<div id="<?php echo $id; ?>" class="navbar-collapse collapse">
-					<?php echo $this->html($result); ?>
-				</div><!--/.nav-collapse -->
-			</div><!--/.container-fluid -->
-		</nav><?php
-		return ob_get_clean();
-		endif;
+		return $this->html($result);
 	}
 }
 
@@ -186,7 +186,7 @@ class Wpska_Menu_Actions extends Wpska_Actions
 				<input type="text" name="wpska_cache_menu" value="<?php echo $wpska_cache_menu; ?>" class="form-control" id="wpska_cache_menu">
 				<div class="input-group-btn" style="width:0px;"></div>
 				<select class="form-control" data-value="<?php echo $wpska_cache_menu; ?>" onchange="jQuery('#wpska_cache_menu').val( jQuery(this).val() );" data-value="<?php echo get_option('wpska_cache', 3600); ?>">
-					<option value="">Tempo predefinido</option>
+					<option value="">Sem cache</option>
 					<option value="1800">Meia Hora</option>
 					<option value="3600">1 Hora</option>
 					<option value="43200">12 Horas</option>

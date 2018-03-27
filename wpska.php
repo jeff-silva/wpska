@@ -129,7 +129,14 @@ class Wpska_Posts
 
 	public function __construct($query, $wpska_query_cache='option')
 	{
-		if (! is_array($query)) {
+		if (is_object($query) AND 'WP_Query'==get_class($query)) {
+			foreach($query as $key=>$val) {
+				$this->{$key} = $val;
+			}
+			return;
+		}
+
+		if (!$query OR is_string($query)) {
 			parse_str($query, $query);
 		}
 
@@ -208,6 +215,12 @@ class Wpska_Posts
 
 			return $pagination;
 		}
+	}
+
+
+	public function paginate()
+	{
+		return $this->pagination();
 	}
 }
 
@@ -691,7 +704,7 @@ class Wpska_Base_Actions extends Wpska_Actions
 					<input type="text" name="wpska_query_cache" value="<?php echo get_option('wpska_query_cache', 3600); ?>" id="wpska_query_cache" class="form-control">
 					<div class="input-group-btn" style="width:0px;"></div>
 					<select name="" class="form-control" onchange="var time=jQuery(this).val(); if (!time) return false; jQuery('#wpska_query_cache').val(time);" data-value="<?php echo get_option('wpska_query_cache', 3600); ?>">
-						<option value="">Tempo predefinido</option>
+						<option value="">Sem cache</option>
 						<option value="1800">Meia Hora</option>
 						<option value="3600">1 Hora</option>
 						<option value="43200">12 Horas</option>
