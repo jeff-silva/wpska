@@ -47,38 +47,41 @@ class Wpska_Postbox_Actions extends Wpska_Actions
 							<div class="col-sm-6">
 								<button type="button" class="btn btn-default" @click="_add(postbox.fields, _field());">Add field</button>
 								<br><br>
-								<div class="panel panel-default" v-for="field in postbox.fields">
-									<div class="panel-body">
-										<div class="row">
-											<div class="col-xs-6">
-												<strong>Título</strong>
-												<input type="text" v-model="field.title" class="form-control">
-											</div>
-											<div class="col-xs-4">
-												<strong>Name</strong>
-												<input type="text" v-model="field.field_name" class="form-control">
-											</div>
-											<div class="col-xs-2 text-right">
-												<a href="javascript:;" class="fa fa-fw fa-remove" @click="_remove(postbox.fields, field, 'Remover este campo?');"></a>
-											</div>
-											<div class="col-xs-12"><br>
-												<strong>Descrição</strong>
-												<textarea v-model="field.text" class="form-control"></textarea>
-											</div>
-											<div class="col-xs-6"><br>
-												<strong>Tipo</strong>
-												<select v-model="field.field_type" class="form-control">
-													<option value="">Nenhum</option>
-													<option :value="ui_type.title" v-for="ui_type in ui_types">{{ ui_type.title }}</option>
-												</select>
-											</div>
-											<div class="col-xs-6"><br>
-												<strong>Parâmetros</strong>
-												<input type="text" v-model="field.field_params" class="form-control">
+								<draggable :list="postbox.fields" :options="{handle:'._handle'}">
+									<div class="panel panel-default" v-for="field in postbox.fields">
+										<div class="panel-heading _handle">::: {{ field.title }}</div>
+										<div class="panel-body">
+											<div class="row">
+												<div class="col-xs-6">
+													<strong>Título</strong>
+													<input type="text" v-model="field.title" class="form-control">
+												</div>
+												<div class="col-xs-4">
+													<strong>Name</strong>
+													<input type="text" v-model="field.field_name" class="form-control">
+												</div>
+												<div class="col-xs-2 text-right">
+													<a href="javascript:;" class="fa fa-fw fa-remove" @click="_remove(postbox.fields, field, 'Remover este campo?');"></a>
+												</div>
+												<div class="col-xs-12"><br>
+													<strong>Descrição</strong>
+													<textarea v-model="field.text" class="form-control"></textarea>
+												</div>
+												<div class="col-xs-6"><br>
+													<strong>Tipo</strong>
+													<select v-model="field.field_type" class="form-control">
+														<option value="">Nenhum</option>
+														<option :value="ui_type.title" v-for="ui_type in ui_types">{{ ui_type.title }}</option>
+													</select>
+												</div>
+												<div class="col-xs-6"><br>
+													<strong>Parâmetros</strong>
+													<input type="text" v-model="field.field_params" class="form-control">
+												</div>
 											</div>
 										</div>
 									</div>
-								</div>
+								</draggable>
 							</div>
 						</div>
 					</div>
