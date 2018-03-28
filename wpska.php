@@ -668,7 +668,7 @@ class Wpska_Base_Actions extends Wpska_Actions
 		global $post;
 		if (isset($_POST['postmeta']) AND is_array($_POST['postmeta'])) {
 			foreach($_POST['postmeta'] as $key=>$val) {
-				if ($val) { update_post_meta($post->ID, $key, $val); }
+				update_post_meta($post->ID, $key, $val);
 			}
 		}
 	}

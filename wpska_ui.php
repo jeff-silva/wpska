@@ -112,6 +112,127 @@ class Wpska_Ui
 	}
 
 
+	static function media($value=null, $params=null)
+	{
+		$params = self::_params($params, array());
+		?>
+		<div class="wpska-ui-media" id="<?php echo $params['id']; ?>">
+			<div class="input-group">
+				<input type="text" name="<?php echo $params['name']; ?>" value="<?php echo $value; ?>" class="form-control wpska-ui-media-input">
+				<div class="input-group-btn">
+					<button type="button" class="btn btn-default wpska-ui-media-btn">
+						<i class="fa fa-fw fa-upload"></i>
+					</button>
+				</div>
+			</div>
+			<div class="wpska-ui-media-preview"></div>
+		</div>
+		<?php
+
+		add_action('wpska_footer', function() use($value, $params, $default) { ?>
+			<?php wpska_header(); ?>
+			<script>
+			jQuery(document).ready(function() {
+				var $parent = $("#<?php echo $params['id']; ?>");
+				var $input = $parent.find(".wpska-ui-media-input");
+				var $btn = $parent.find(".wpska-ui-media-btn");
+				var $preview = $parent.find(".wpska-ui-media-preview");
+
+				$btn.on("click", function() {
+					var media = wp.media({
+						title: 'Select Media',
+						multiple : false,
+						library : {type : 'image'}
+					});
+
+					media.on('select',function() {
+						var attachs = media.state().get('selection').toJSON();
+						for(var i in attachs) {
+							$input.val(attachs[i].url);
+							$input.trigger("change");
+							break;
+						}
+					});
+
+					media.open();
+				});
+
+				$input.on("change", function() {
+					$preview.html('');
+					var value = $input.val();
+					if (value.match(/\.(jpg|gif|png)$/)||false) {
+						$preview.html('<div style="max-height:300px; overflow:hidden;"><img src="'+value+'" alt="" style="width:100%;" /></div>');
+					}
+				}).trigger("change");
+			});
+			</script>
+		<?php });
+	}
+
+
+
+	static function medias($value=null, $params=null)
+	{
+		$params = self::_params($params, array());
+
+		$value = json_decode($value, true);
+		$value = is_array($value)? $value: array();
+
+		?>
+		<div class="wpska-ui-medias" id="<?php echo $params['id']; ?>">
+			<button type="button" class="btn btn-default wpska-ui-medias-btn" @click="_media();">
+				<i class="fa fa-fw fa-upload"></i>
+			</button>
+			<div class="wpska-ui-medias-preview">
+				<div v-for="attach in value" style="display:inline-block; position:relative; padding:5px;">
+					<img :src="attach.url" :alt="attach.title" style="height:120px;">
+					<a href="javascript:;" class="fa fa-fw fa-remove" style="position:absolute; top:5px; right:5px; background:#ffffff66; color:#222; padding:15px 25px 15px 15px;" @click="_attachRemove(attach);"></a>
+				</div>
+			</div>
+			<textarea name="<?php echo $params['name']; ?>" style="display:none;">{{ value }}</textarea>
+			<!-- <pre>{{ $data }}</pre> -->
+		</div>
+		<?php
+
+		add_action('wpska_footer', function() use($value, $params, $default) { ?>
+			<?php wpska_header(); ?>
+			<script>
+			new Vue({
+				el: "#<?php echo $params['id']; ?>",
+				data: {
+					value: <?php echo json_encode($value); ?>,
+				},
+				methods: {
+					_media: function() {
+						var app=this;
+
+						var media = wp.media({
+							title: 'Select Medias',
+							multiple : true,
+							library : {type : 'image'},
+						});
+
+						media.on('select',function() {
+							var attachs = media.state().get('selection').toJSON();
+							Vue.set(app, "value", attachs);
+						});
+
+						media.open();
+					},
+
+					_attachRemove: function(attach) {
+						var app = this;
+						var index = app.value.indexOf(attach);
+						app.value.splice(index, 1);
+					},
+				},
+			});
+			</script>
+		<?php });
+	}
+
+
+
 	static function address($value=null, $params=null)
 	{
 		$params = self::_params($params, array());
@@ -187,9 +308,7 @@ class Wpska_Ui
 	}
 
 
-	static function uploader($value=null, $params=null) { echo '<input type="text" class="form-control" value="uploader">'; }
-	static function upload($value=null, $params=null) { echo '<input type="text" class="form-control" value="upload">'; }
-	static function uploads($value=null, $params=null) { echo '<input type="text" class="form-control" value="uploads">'; }
+	
 	static function color($value=null, $params=null) { echo '<input type="text" class="form-control" value="color">'; }
 	
 

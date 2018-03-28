@@ -158,6 +158,7 @@ class Wpska_Postbox_Actions extends Wpska_Actions
 		foreach($wpska_postbox_boxes as $postbox) {
 			foreach($postbox['post_types'] as $post_type) {
 				add_meta_box($postbox['id'], $postbox['title'], function() use($postbox) {
+					global $post;
 					if ($postbox['text']) echo "<div style='padding:10px 0px;'>{$postbox['text']}</div>";
 					echo '<table style="width:100%;"><col width="*"><col width="*"><tbody>';
 					foreach($postbox['fields'] as $field) {
