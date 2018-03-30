@@ -1,5 +1,39 @@
 <?php
 
+/*
+
+class Mytheme_Theme extends Wpska_Theme
+{
+	public function init()
+	{
+		$this->setting('maintenance', array(
+			'label' => 'Manutenção',
+			'description' => 'Ativar/Desativar manutenção',
+			'default' => '1',
+			'type' => 'option',
+			'choices' => array('No ar', 'Em manutenção'),
+		));
+
+
+		$this->setting('custom_field', array(
+			'label' => 'Manutenção',
+			'description' => 'Ativar/Desativar manutenção',
+			'default' => '1',
+		));
+
+
+		$this->customField('custom_field', function($field) {
+			echo '<div style="border:solid 1px red;">'. $field->value() .'</div>';
+		});
+	}
+}
+
+
+$theme = new Mytheme_Theme();
+echo $theme->get('maintenance');
+
+*/
+
 function wpska_theme_classes_create() {
 	if (class_exists('Wpska_Theme_Control_Callback')) return false;
 
