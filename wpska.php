@@ -752,14 +752,20 @@ class Wpska_Base_Actions extends Wpska_Actions
 
 	public function wpska_settings()
 	{
+		$modules = wpska_modules();
+
 		if (isset($_GET['wpska-update'])) {
-			$mod = wpska_modules($_GET['wpska-update']);
-			$content = wpska_content($mod['download']);
-			file_put_contents($mod['file'], $content);
+			foreach($modules as $mod) {
+				if ($mod['file_exists']==1 AND ($mod['id']==$_GET['wpska-update'] OR $_GET['wpska-update']=='all')) {
+					$content = wpska_content($mod['download']);
+					file_put_contents($mod['file'], $content);
+				}
+			}
+
 			wpska_redirect($_SERVER['HTTP_REFERER']); exit;
 		}
 
-		wpska_tab('Módulos', function() { ?>
+		wpska_tab('Módulos', function() use($modules) { ?>
 		<table class="table table-striped">
 			<thead>
 				<tr>
@@ -768,7 +774,7 @@ class Wpska_Base_Actions extends Wpska_Actions
 				</tr>
 			</thead>
 			<tbody>
-				<?php foreach(wpska_modules() as $mod): ?>
+				<?php foreach($modules as $mod): ?>
 				<tr>
 					<td><?php echo $mod['title']; ?></td>
 					<td class="text-right">
@@ -778,6 +784,13 @@ class Wpska_Base_Actions extends Wpska_Actions
 					</td>
 				</tr>
 				<?php endforeach; ?>
+
+				<tr>
+					<td></td>
+					<td style="text-align:right;">
+						<a href="<?php echo admin_url("/options-general.php?page=wpska-settings&wpska-update=all"); ?>">Atualizar todos</a>
+					</td>
+				</tr>
 			</tbody>
 		</table>
 		<?php });
