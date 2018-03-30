@@ -283,6 +283,7 @@ function wpska_modules($keyname=null) {
 	$modules['wpska_ui'] = array('title'=>'User interfaces');
 	$modules['wpska_email'] = array('title'=>'Gerenciamento e customização de e-mails');
 	$modules['wpska_postbox'] = array('title'=>'Gerenciamento de postboxes.');
+	$modules['wpska_theme'] = array('title'=>'Customização de tema.');
 
 	foreach($modules as $key=>$mod) {
 		$mod['id'] = $key;

@@ -233,6 +233,15 @@ class Wpska_Ui
 
 
 
+
+	static function url($value, $params=null)
+	{
+		$params = self::_params($params, array());
+		echo "<div>Search Wordpress URL: {$value}</div>";
+	}
+
+
+
 	static function address($value=null, $params=null)
 	{
 		$params = self::_params($params, array());
