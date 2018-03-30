@@ -66,6 +66,7 @@ class Wpska_Ui
 
 		$params['id'] = 'wpska-ui-'.rand();
 		$params['name'] = isset($params['name'])? $params['name']: '';
+		$params['attr'] = isset($params['attr'])? $params['attr']: '';
 
 		return $params;
 	}
@@ -118,7 +119,7 @@ class Wpska_Ui
 		?>
 		<div class="wpska-ui-media" id="<?php echo $params['id']; ?>">
 			<div class="input-group">
-				<input type="text" name="<?php echo $params['name']; ?>" value="<?php echo $value; ?>" class="form-control wpska-ui-media-input">
+				<input type="text" name="<?php echo $params['name']; ?>" value="<?php echo $value; ?>" class="form-control wpska-ui-media-input" <?php echo $params['attr']; ?> >
 				<div class="input-group-btn">
 					<button type="button" class="btn btn-default wpska-ui-media-btn">
 						<i class="fa fa-fw fa-upload"></i>
@@ -127,46 +128,51 @@ class Wpska_Ui
 			</div>
 			<div class="wpska-ui-media-preview"></div>
 		</div>
-		<?php
-
-		add_action('wpska_footer', function() use($value, $params, $default) { ?>
-			<?php wpska_header(); ?>
-			<script>
-			jQuery(document).ready(function() {
-				var $parent = $("#<?php echo $params['id']; ?>");
-				var $input = $parent.find(".wpska-ui-media-input");
-				var $btn = $parent.find(".wpska-ui-media-btn");
-				var $preview = $parent.find(".wpska-ui-media-preview");
-
-				$btn.on("click", function() {
-					var media = wp.media({
-						title: 'Select Media',
-						multiple : false,
-						library : {type : 'image'}
-					});
-
-					media.on('select',function() {
-						var attachs = media.state().get('selection').toJSON();
-						for(var i in attachs) {
-							$input.val(attachs[i].url);
-							$input.trigger("change");
-							break;
-						}
-					});
-
-					media.open();
+		<?php wpska_header(); ?>
+		<script>
+		jQuery(document).ready(function() {
+			var $parent = $("#<?php echo $params['id']; ?>");
+			var $input = $parent.find(".wpska-ui-media-input");
+			var $btn = $parent.find(".wpska-ui-media-btn");
+			var $preview = $parent.find(".wpska-ui-media-preview");
+			var _mediaOpen = function() {
+				var media = wp.media({
+					title: 'Select Media',
+					multiple : false,
+					library : {type : 'image'}
 				});
 
-				$input.on("change", function() {
-					$preview.html('');
-					var value = $input.val();
-					if (value.match(/\.(jpg|gif|png)$/)||false) {
-						$preview.html('<div style="max-height:300px; overflow:hidden;"><img src="'+value+'" alt="" style="width:100%;" /></div>');
+				media.on('select',function() {
+					var attachs = media.state().get('selection').toJSON();
+					for(var i in attachs) {
+						$input.val(attachs[i].url);
+						$input.trigger("change");
+						break;
 					}
-				}).trigger("change");
+				});
+
+				media.open();
+			};
+			var _preview = function(value) {
+				$preview.html('');
+				if (value.match(/\.(jpg|jpeg|bmp|png|gif)/)||false) {
+					$preview.html('<div style="max-height:300px; overflow:hidden;"><img src="'+value+'" alt="" style="width:100%; cursor:pointer;" /></div>');
+					$preview.find("img").on("click", _mediaOpen);
+				}
+			};
+
+			$btn.on("click", _mediaOpen);
+
+			$input.on("change", function() {
+				_preview($input.val());
 			});
-			</script>
-		<?php });
+
+			setTimeout(function() {
+				_preview("<?php echo $value; ?>");
+			}, 200);
+		});
+		</script>
+		<?php
 	}
 
 
@@ -192,43 +198,40 @@ class Wpska_Ui
 			<textarea name="<?php echo $params['name']; ?>" style="display:none;">{{ value }}</textarea>
 			<!-- <pre>{{ $data }}</pre> -->
 		</div>
+		<?php wpska_header(); ?>
+		<script>
+		new Vue({
+			el: "#<?php echo $params['id']; ?>",
+			data: {
+				value: <?php echo json_encode($value); ?>,
+			},
+			methods: {
+				_media: function() {
+					var app=this;
+
+					var media = wp.media({
+						title: 'Select Medias',
+						multiple : true,
+						library : {type : 'image'},
+					});
+
+					media.on('select',function() {
+						var attachs = media.state().get('selection').toJSON();
+						Vue.set(app, "value", attachs);
+					});
+
+					media.open();
+				},
+
+				_attachRemove: function(attach) {
+					var app = this;
+					var index = app.value.indexOf(attach);
+					app.value.splice(index, 1);
+				},
+			},
+		});
+		</script>
 		<?php
-
-		add_action('wpska_footer', function() use($value, $params, $default) { ?>
-			<?php wpska_header(); ?>
-			<script>
-			new Vue({
-				el: "#<?php echo $params['id']; ?>",
-				data: {
-					value: <?php echo json_encode($value); ?>,
-				},
-				methods: {
-					_media: function() {
-						var app=this;
-
-						var media = wp.media({
-							title: 'Select Medias',
-							multiple : true,
-							library : {type : 'image'},
-						});
-
-						media.on('select',function() {
-							var attachs = media.state().get('selection').toJSON();
-							Vue.set(app, "value", attachs);
-						});
-
-						media.open();
-					},
-
-					_attachRemove: function(attach) {
-						var app = this;
-						var index = app.value.indexOf(attach);
-						app.value.splice(index, 1);
-					},
-				},
-			});
-			</script>
-		<?php });
 	}
 
 
@@ -288,9 +291,6 @@ class Wpska_Ui
 			</div>
 			<textarea name="<?php echo $params['name']; ?>" style="display:none;">{{ value }}</textarea>
 		</div>
-		<?php
-
-		add_action('wpska_footer', function() use($value, $params, $default) { ?>
 		<?php wpska_header(); ?>
 		<script>
 		new Vue({
@@ -313,7 +313,7 @@ class Wpska_Ui
 			},
 		});
 		</script>
-		<?php });
+		<?php
 	}
 
 

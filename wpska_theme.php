@@ -1,13 +1,19 @@
 <?php
 
-function wpska_theme_ghost_create() {
-	class Wpska_Theme_Ghost extends WP_Customize_Control
+function wpska_theme_classes_create() {
+	if (class_exists('Wpska_Theme_Control_Callback')) return false;
+
+	class Wpska_Theme_Control_Callback extends WP_Customize_Control
 	{
 		public function __construct($manager, $id, $args=array())
 		{
 			$this->type = $args['type'];
 			$this->callback = $args['callback'];
 			parent::__construct($manager, $id, $args);
+		}
+
+		public function link($setting_key='default') {
+			return $this->get_link($setting_key);
 		}
 
 		public function render_content()
@@ -17,6 +23,16 @@ function wpska_theme_ghost_create() {
 			}
 		}
 	}
+
+
+	class Wpska_Theme_Control_Media extends WP_Customize_Control
+	{
+		public $type = 'wpska_media';
+
+		public function render_content() { ?>
+		<div>media</div>
+		<?php }
+	}
 }
 
 
@@ -25,22 +41,24 @@ function wpska_theme_ghost_create() {
 
 class Wpska_Theme
 {
-	public $Name = false;
-	public $ThemeURI = false;
-	public $Description = false;
-	public $Author = false;
-	public $AuthorURI = false;
+
+	static $data = array();
+
 	public function __construct()
 	{
-		$theme = wp_get_theme();
-		$this->Name = $theme->get('Name');
-		$this->ThemeURI = $theme->get('ThemeURI');
-		$this->Description = $theme->get('Description');
-		$this->Author = $theme->get('Author');
-		$this->AuthorURI = $theme->get('AuthorURI');
-		$this->init();
-		add_action('customize_register', array($this, 'customize_register'));
-		// dd($this); die;
+		if (empty(self::$data)) {
+			
+			$theme = wp_get_theme();
+			self::$data['Name'] = $theme->get('Name');
+			self::$data['ThemeURI'] = $theme->get('ThemeURI');
+			self::$data['Description'] = $theme->get('Description');
+			self::$data['Author'] = $theme->get('Author');
+			self::$data['AuthorURI'] = $theme->get('AuthorURI');
+			self::$data['settings'] = array();
+
+			$this->init();
+			add_action('customize_register', array($this, 'customize_register'));
+		}
 	}
 
 	public function init() {}
@@ -49,9 +67,10 @@ class Wpska_Theme
 	public $settings = array();
 	public function setting($keyname, $settings=null)
 	{
+		$index = sizeof(self::$data['settings'])+1;
+
 		if (! is_array($settings)) parse_str($settings, $settings);
 		$settings = is_array($settings)? $settings: array();
-		$index = sizeof($this->settings)+1;
 		$settings = array_merge(array(
 			'label' => "label {$index}",
 			'description' => '',
@@ -60,15 +79,16 @@ class Wpska_Theme
 			'type' => 'text',
 			'choices' => array(),
 		), $settings);
-		$this->settings[ $keyname ] = $settings;
+
+		self::$data['settings'][$keyname] = $settings;
 	}
 
 
 	public function customField($keyname, $callback)
 	{
-		if (isset($this->settings[ $keyname ]) AND is_callable($callback)) {
-			// $this->settings[ $keyname ]['type'] = false;
-			$this->settings[ $keyname ]['callback'] = $callback;
+		if (isset(self::$data['settings'][$keyname]) AND is_callable($callback)) {
+			// self::$data['settings'][ $keyname ]['type'] = false;
+			self::$data['settings'][$keyname]['callback'] = $callback;
 		}
 	}
 
@@ -76,8 +96,8 @@ class Wpska_Theme
 	public function get($keyname)
 	{
 		$default = false;
-		if (isset($this->settings[ $keyname ])) {
-			$default = $this->settings[ $keyname ]['default'];
+		if (isset(self::$data['settings'][$keyname])) {
+			$default = self::$data['settings'][$keyname]['default'];
 		}
 		return get_theme_mod($keyname, $default);
 	}
@@ -85,38 +105,66 @@ class Wpska_Theme
 
 	public function customize_register($wp_customize)
 	{
-
-		foreach($this->settings as $keyname=>$setting) {
-			$args = $setting;
-			$args['type'] = 'theme_mod';
-			$wp_customize->add_setting($keyname, $args);
-		}
-
 		$section_key = strtolower(__CLASS__);
 		$wp_customize->add_section($section_key, array(
-			'title'       => $this->Name,
-			'description' => $this->Description,
-			'priority'    => 20,
+			'title' => self::$data['Name'],
+			'description' => self::$data['Description'],
+			'priority' => 20,
 		));
 
-		foreach($this->settings as $setting_key=>$setting) {
-			$args = array();
-			$args['label'] = $setting['label'];
-			$args['description'] = $setting['description'];
-			$args['priority'] = 10;
-			$args['section'] = $section_key;
+
+		foreach(self::$data['settings'] as $keyname=>$setting) {
+
+			if (is_string($setting)) parse_str($setting, $setting);
+			$setting = is_array($setting)? $setting: array();
+
+			// Add settings
+			$settings_args = array_merge(array(
+				'capability' => 'edit_theme_options',
+			), $setting);
+
+			$settings_args['type'] = 'theme_mod';
+			$wp_customize->add_setting($keyname, $settings_args);
+
+
+			// Add control
+			$control_args = array_merge(array(
+				'priority' => 10,
+				'section' => $section_key,
+				'input_attrs' => array(),
+				// 'settings' => $keyname,
+			), $setting);
+
+			
+			// wpska_media
+			if ($setting['type']=='wpska_media') {
+				$setting['callback'] = function($me) use($keyname) {
+					echo '<label>Media</label><br>';
+					Wpska_Ui::media($me->value(), array(
+						'name' => "guaglini_section01_img0{$x}_img",
+						'attr' => $me->link(),
+					));
+				};
+			}
 
 			if (isset($setting['callback'])) {
-				$args['type'] = $setting_key;
-				$args['callback'] = $setting['callback'];
-				wpska_theme_ghost_create();
-				$wp_customize->add_control(new Wpska_Theme_Ghost($wp_customize, $setting_key, $args));
+				$control_args['type'] = $keyname;
+				$control_args['callback'] = $setting['callback'];
+				wpska_theme_classes_create();
+				$wp_customize->add_control(new Wpska_Theme_Control_Callback($wp_customize, $keyname, $control_args));
 			}
 
 			else {
-				$wp_customize->add_control(new WP_Customize_Control($wp_customize, $setting_key, $args));
+				$wp_customize->add_control($keyname, $control_args);
 			}
+
+			// dd(array(
+			// 	'settings_args' => $settings_args,
+			// 	'control_args' => $control_args,
+			// )); die;
 		}
+
+		// dd(get_theme_mods(), $wp_customize); die;
 	}
 }
 
