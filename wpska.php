@@ -263,13 +263,7 @@ class Wpska_Post
 function wpska_header() {
 	global $wpska_header_loaded;
 	if ($wpska_header_loaded) return null;
-
-	?>
-	<script>var wpska_site_url = "<?php echo site_url('/'); ?>";</script>
-	<script src="https://wpska.herokuapp.com/wpska.js"></script>
-	<link rel="stylesheet" href="https://wpska.herokuapp.com/wpska.css">
-	<?php
-
+	echo '<script src="https://wpska.herokuapp.com/wpska.js"></script>';
 	$wpska_header_loaded=true;
 }
 
