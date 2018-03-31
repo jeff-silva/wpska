@@ -28,6 +28,13 @@ $$ = function(selector, loads, callback) {var $=jQuery; if ($(selector).length>0
 var _appInit = function() {
 	var $=jQuery;
 
+	$.fn.params = function(attr) {
+		var params = $(this).attr(attr)||"";
+		if (typeof window[params]=="function") { params = window[params](); }
+		else if (typeof params != "object") {try { eval('params='+params); } catch(e) { params={}; }}
+		return params;
+	};
+
 	$$("[data-vue]", [_dir("/assets/load-vue.js")]);
 	$$("[data-slick]", [_dir("/assets/load-slick.js")]);
 	$$("[data-codemirror]", [_dir("/assets/load-codemirror.js")]);

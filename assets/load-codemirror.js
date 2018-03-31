@@ -1,4 +1,3 @@
-
 $("[data-codemirror]").each(function() {
 	var opts = $(this).attr("data-codemirror")||"{}";
 	try { eval('opts='+opts); } catch(e) { opts={}; }

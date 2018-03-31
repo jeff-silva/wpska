@@ -42,23 +42,29 @@ class Tab
 
 
 Tab::add('Vue', function() { ?>
-<div data-vue="vueInit">
+<div data-vue="{init:vueInit}">
 	<div class="text-right">
 		<button class="btn btn-default" @click="_todoAdd();">_todoAdd();</button>
 	</div>
 	<br>
-	<div class="list-group">
+	<div class="row">
 		<draggable :list="todos" :options="{handle:'._handle', animation:150}">
-			<div class="list-group-item" v-for="todo in todos">
-				<div class="pull-right">
-					<a href="javascript:;" class="fa fa-fw fa-remove" @click="_remove(todos, todo);"></a>
+			<div class="col-xs-3 todos-each" v-for="todo in todos">
+				<div class="panel panel-default">
+					<div class="panel-heading _handle">
+						<div class="pull-right">
+							<a href="javascript:;" class="fa fa-fw fa-remove" @click="_remove(todos, todo, {ev:$event, closest:'.todos-each'});"></a>
+						</div>
+						<strong>{{ todo.title }}</strong>
+					</div>
+					<div class="panel-body">
+						Basic panel example
+					</div>
 				</div>
-				<small class="_handle">:::</small>
-				<strong>{{ todo.title }}</strong>
 			</div>
 		</draggable>
 
-		<div class="list-group-item" v-if="!todos.length">
+		<div class="col-xs-12 jumbotron text-center" v-if="!todos.length">
 			<small class="text-muted">Nenhum ítem</small>
 		</div>
 	</div>
@@ -75,7 +81,7 @@ function vueInit(scope) {
 
 	scope.methods._todo = function(todo) {
 		return this._default(todo, {
-			title: "Todo #{$_id}",
+			title: "#{$_id}",
 			description: "",
 			status: "ok",
 		});
@@ -89,7 +95,7 @@ function vueInit(scope) {
 
 
 Tab::add('Slick', function() { ?>
-<div data-slick="{slidesToShow:1, fade:true, asNavFor:'.slick-nav'}" class="slick slick-big">
+<div data-slick="{slidesToShow:1, arrows:true, asNavFor:'.slick-nav'}" class="slick slick-big">
 	<div><div class="cover" style="background-image:url(https://picsum.photos/600/400?0);"></div></div>
 	<div><div class="cover" style="background-image:url(https://picsum.photos/600/400?1);"></div></div>
 	<div><div class="cover" style="background-image:url(https://picsum.photos/600/400?2);"></div></div>
