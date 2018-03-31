@@ -58,7 +58,15 @@ Tab::add('Vue', function() { ?>
 						<strong>{{ todo.title }}</strong>
 					</div>
 					<div class="panel-body">
-						Basic panel example
+						<div class="form-group">
+							<label>Title</label>
+							<input type="text" v-model="todo.title" class="form-control">
+						</div>
+						
+						<div class="form-group">
+							<label>Title</label>
+							<textarea v-model="todo.description" class="form-control"></textarea>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -107,7 +115,7 @@ Tab::add('Slick', function() { ?>
 	<div><div class="cover" style="background-image:url(https://picsum.photos/600/400?8);"></div></div>
 	<div><div class="cover" style="background-image:url(https://picsum.photos/600/400?9);"></div></div>
 </div>
-<div data-slick="{slidesToShow:6, dots:true, asNavFor:'.slick-big'}" class="slick slick-nav">
+<div data-slick="{slidesToShow:5, dots:true, centerMode:true, asNavFor:'.slick-big'}" class="slick slick-nav">
 	<div><div class="cover" style="background-image:url(https://picsum.photos/600/400?0);"></div></div>
 	<div><div class="cover" style="background-image:url(https://picsum.photos/600/400?1);"></div></div>
 	<div><div class="cover" style="background-image:url(https://picsum.photos/600/400?2);"></div></div>
