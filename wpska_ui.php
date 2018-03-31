@@ -505,7 +505,7 @@ class Wpska_Ui
 		
 		?>
 
-		<div id="<?php echo $params['id']; ?>" class="wpska-ui-frete">
+		<div id="<?php echo $params['id']; ?>" class="wpska-ui-frete" data-vue="{init:vueInit}">
 			<div class="input-group">
 				<input type="text" class="form-control wpska-ui-frete-input" @keydown.prevent.13="_calculate();" v-model="value.params.sCepDestino">
 				<div class="input-group-btn">
@@ -536,27 +536,29 @@ class Wpska_Ui
 		<?php wpska_header(); ?>
 
 		<script>
-		new Vue({
-			el: "#<?php echo $params['id']; ?>",
-			data: {
-				loading: false,
-				value: <?php echo json_encode($value); ?>,
-			},
-			methods: {
-				_calculate: function() {
-					var app=this, $=jQuery, $parent=$("#<?php echo $params['id']; ?>");
-					app.loading = true;
-					app.value.action = "wpska_ui_frete";
-					$parent.css({opacity:.5});
-					$.get("<?php echo admin_url('/admin-ajax.php'); ?>", app.value, function(resp) {
-						app.loading = false;
-						$parent.find("table").fadeIn(200);
-						$parent.css({opacity:1});
-						Vue.set(app, "value", resp.success);
-					}, "json");
+		var vueInit = function() {
+			return {
+				el: "#<?php echo $params['id']; ?>",
+				data: {
+					loading: false,
+					value: <?php echo json_encode($value); ?>,
 				},
-			},
-		});
+				methods: {
+					_calculate: function() {
+						var app=this, $=jQuery, $parent=$("#<?php echo $params['id']; ?>");
+						app.loading = true;
+						app.value.action = "wpska_ui_frete";
+						$parent.css({opacity:.5});
+						$.get("<?php echo admin_url('/admin-ajax.php'); ?>", app.value, function(resp) {
+							app.loading = false;
+							$parent.find("table").fadeIn(200);
+							$parent.css({opacity:1});
+							Vue.set(app, "value", resp.success);
+						}, "json");
+					},
+				},
+			};
+		};
 		</script>
 		<?php
 	}
