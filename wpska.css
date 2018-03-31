@@ -1,6 +1,3 @@
-@import url(https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css);
-
-
 /* Cover */
 .cover {position:relative; overflow:hidden; width:200px; height:200px; display:block; background:none no-repeat center center; background-size:cover;}
 .cover img {position:absolute; left:50%; top:50%; height:100%; height:auto; transform:translate(-50%, -50%);}
