@@ -8,7 +8,7 @@ function _load(files) {
 		var regex = new RegExp(files[i][0]);
 		if (regex.test(_testloaded)) continue;
 		var url = files[i][1];
-		if (/\.js/.test(url)) {document.write('<scri'+'pt src="'+url+'" async><\/scri'+'pt>');}
+		if (/\.js/.test(url)) {document.write('<scri'+'pt src="'+url+'"><\/scri'+'pt>');}
 		else if (/\.css/.test(url)) {document.write('<link rel="stylesheet" href="'+url+'" />');}
 	}
 }
