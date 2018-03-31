@@ -61,7 +61,7 @@ class Wpska_Ui
 		if ($merge) {
 			if (is_string($merge)) parse_str($merge, $merge);
 			$merge = is_array($merge)? $merge: array();
-			$params = array_merge($params, $merge);
+			$params = array_merge($merge, array_filter($params, 'strlen'));
 		}
 
 		$params['id'] = 'wpska-ui-'.rand();
@@ -444,9 +444,6 @@ class Wpska_Ui
 			</div>
 			<textarea name="<?php echo $params['name']; ?>" style="display:none;">{{ value }}</textarea>
 		</div>
-		<?php
-
-		add_action('wpska_footer', function() use($value, $params) { ?>
 		<?php wpska_header(); ?>
 		<script>
 		new Vue({
@@ -472,8 +469,7 @@ class Wpska_Ui
 			},
 		});
 		</script>
-		<?php });
-
+		<?php
 	}
 
 
@@ -501,30 +497,15 @@ class Wpska_Ui
 		$value = is_array($value)? $value: array();
 		$value['params'] = isset($value['params'])? $value['params']: array();
 		$value['params'] = is_array($value['params'])? $value['params']: array();
-		$value['params'] = array_merge(array(
-			'nCdEmpresa' => '',
-			'sDsSenha' => '',
-			'sCepOrigem' => '',
-			'sCepDestino' => '',
-			'nVlPeso' => '0',
-			'nCdFormato' => '1',
-			'nVlComprimento' => '0',
-			'nVlAltura' => '0',
-			'nVlLargura' => '0',
-			'sCdMaoPropria' => 'n',
-			'nVlValorDeclarado' => '0',
-			'sCdAvisoRecebimento' => 'n',
-			'nCdServico' => '', //41106:PAC, 40010:Sedex, 40045:Sedex a cobrar, 40215:Sedex10
-			'nVlDiametro' => '0',
-			'StrRetorno' => 'xml',
-		), $value['params']);
+		$value['params'] = array_filter($value['params'], 'strlen');
+		$value['params'] = array_merge($value['params'], $params);
 
 		$value['values'] = isset($value['values'])? $value['values']: array();
 		$value['values'] = is_array($value['values'])? $value['values']: array();
 		
 		?>
+
 		<div id="<?php echo $params['id']; ?>" class="wpska-ui-frete">
-			<textarea style="display:none;">{{ value }}</textarea>
 			<div class="input-group">
 				<input type="text" class="form-control wpska-ui-frete-input" @keydown.prevent.13="_calculate();" v-model="value.params.sCepDestino">
 				<div class="input-group-btn">
@@ -549,11 +530,11 @@ class Wpska_Ui
 					</tr>
 				</tbody>
 			</table>
+			<textarea style="display:none;">{{ value }}</textarea>
 		</div>
-		<?php
 
-		add_action('wpska_footer', function() use($value, $params) { ?>
 		<?php wpska_header(); ?>
+
 		<script>
 		new Vue({
 			el: "#<?php echo $params['id']; ?>",
@@ -565,9 +546,9 @@ class Wpska_Ui
 				_calculate: function() {
 					var app=this, $=jQuery, $parent=$("#<?php echo $params['id']; ?>");
 					app.loading = true;
-					app.value.wpska = "wpska_ui_frete";
+					app.value.action = "wpska_ui_frete";
 					$parent.css({opacity:.5});
-					$.get("<?php echo site_url('/'); ?>", app.value, function(resp) {
+					$.get("<?php echo admin_url('/admin-ajax.php'); ?>", app.value, function(resp) {
 						app.loading = false;
 						$parent.find("table").fadeIn(200);
 						$parent.css({opacity:1});
@@ -577,7 +558,7 @@ class Wpska_Ui
 			},
 		});
 		</script>
-		<?php });
+		<?php
 	}
 
 }
