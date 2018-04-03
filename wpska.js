@@ -28,16 +28,19 @@ $$ = function(selector, loads, callback) {var $=jQuery; if ($(selector).length>0
 var _appInit = function() {
 	var $=jQuery;
 
-	$.fn.params = function(attr) {
+	$.fn.params = function(attr, defs) {
 		var params = $(this).attr(attr)||"";
 		if (typeof window[params]=="function") { params = window[params](); }
 		else if (typeof params != "object") {try { eval('params='+params); } catch(e) { params={}; }}
+		defs = (typeof defs=="object")? defs: {};
+		for(var i in defs) { if (typeof params[i]=="undefined") params[i]=defs[i]; }
 		return params;
 	};
 
 	$$("[data-vue]", [_dir("/assets/load-vue.js")]);
 	$$("[data-slick]", [_dir("/assets/load-slick.js")]);
 	$$("[data-codemirror]", [_dir("/assets/load-codemirror.js")]);
+	$$("[data-flatpickr]", [_dir("/assets/load-flatpickr.js")]);
 };
 
 _load([

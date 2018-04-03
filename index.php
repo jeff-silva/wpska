@@ -32,7 +32,7 @@ class Tab
 				call_user_func($tab['callback']);
 				$content = ob_get_clean();
 				echo $content;
-				echo '<br><textarea data-codemirror="{}">'. htmlspecialchars($content) .'</textarea>';
+				echo '<br><textarea data-codemirror="{readOnly:true}">'. htmlspecialchars($content) .'</textarea>';
 			}
 		}
 	}
@@ -115,7 +115,7 @@ Tab::add('Slick', function() { ?>
 	<div><div class="cover" style="background-image:url(https://picsum.photos/600/400?8);"></div></div>
 	<div><div class="cover" style="background-image:url(https://picsum.photos/600/400?9);"></div></div>
 </div>
-<div data-slick="{slidesToShow:5, dots:true, centerMode:true, asNavFor:'.slick-big'}" class="slick slick-nav">
+<div data-slick="{slidesToShow:5, arrows:false, dots:true, centerMode:true, asNavFor:'.slick-big'}" class="slick slick-nav">
 	<div><div class="cover" style="background-image:url(https://picsum.photos/600/400?0);"></div></div>
 	<div><div class="cover" style="background-image:url(https://picsum.photos/600/400?1);"></div></div>
 	<div><div class="cover" style="background-image:url(https://picsum.photos/600/400?2);"></div></div>
@@ -131,7 +131,29 @@ Tab::add('Slick', function() { ?>
 .slick {background:#eee;}
 .slick-big .cover {width:100%; height:400px;}
 .slick-nav .cover {width:100%; height:100px; border:solid 5px #fff;}
+.slick-prev {margin-left:30px; z-index:9;}
+.slick-next {margin-right:30px; z-index:9;}
 </style>
+<?php });
+
+
+
+
+
+
+Tab::add('Flatpicker', function() { ?>
+<div data-vue='{data:{pickr1:null, pickr2:null}}'>
+	<div class="row">
+		<div class="col-xs-6">
+			<input type="text" class="form-control" data-flatpickr="{}" v-model="pickr1">
+			<pre>{{ pickr1 }}&nbsp;</pre>
+		</div>
+		<div class="col-xs-6">
+			<input type="text" class="form-control" data-flatpickr="{}" v-model="pickr2">
+			<pre>{{ pickr2 }}&nbsp;</pre>
+		</div>
+	</div>
+</div>
 <?php });
 
 
