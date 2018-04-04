@@ -6,78 +6,66 @@ var files = [
 
 head.load(files, function() {
 	$("[data-vue]").each(function() {
-		var $this = $(this);
-
-		var params = $(this).params("data-vue", {
-			el: this,
+		
+		var datavue = $(this).params("data-vue", {
 			data: {},
 			methods: {},
 		});
 
-		// _default
-		params.methods._default = function(item, def) {
+		datavue.el = this;
+		datavue.data = datavue.data||{};
+		datavue.data.loading = false;
+		datavue.data.data = {};
+
+		datavue.methods = datavue.methods||{};
+
+		datavue.methods._sync = function() {
+			this.loading = true;
+			ref.set(this.data);
+		};
+
+		datavue.methods._id = function() {
+			var d = new Date();
+			return [
+				d.getYear(),
+				d.getMonth(),
+				d.getDate(),
+				d.getHours(),
+				d.getMinutes(),
+				d.getSeconds(),
+				d.getMilliseconds()
+			].join('');
+		};
+
+		datavue.methods._default = function(item, defs) {
 			item = (typeof item=="object")? item: {};
-			def = (typeof def=="object")? def: {};
-			if (typeof item._id=="undefined") {
-				var d = new Date();
-				item._id = [
-					d.getYear(),
-					d.getMonth(),
-					d.getDate(),
-					d.getHours(),
-					d.getMinutes(),
-					d.getSeconds(),
-					d.getMilliseconds()
-				].join('');
-			}
-			for(var i in def) {
-				if (typeof item[i]=="undefined") {
-					item[i] = def[i];
-				}
-			}
-			for(var i in item) {
-				item[i] = item[i].replace('{$_id}', item._id);
-			}
+			defs = (typeof defs=="object")? defs: {};
+			for(var i in defs) {if (typeof item[i]=="undefined") item[i]=defs[i]; }
+			item._id = item._id||this._id();
+			for(var i in item) {item[i] = (item[i]||"").replace('{$id}', item._id);}
 			return item;
 		};
 
-		// _add
-		params.methods._add = function(items, item, prepend) {
-			(prepend||false)? items.unshift(item): items.push(item);
+		datavue.methods._add = function(parent, keyname, item) {
+			item._id = this._id();
+			var items = (typeof parent[keyname]=="object")? parent[keyname]: [];
+			items.push(item);
+			Vue.set(parent, keyname, items);
 		};
 
-		// _remove
-		params.methods._remove = function(items, item, prepend) {
-			params = (typeof params=="object")? params: {};
-			params.confirm = params.confirm||false;
-			params.closest = params.closest||false;
-			params.ev = params.ev||false;
-
-			var _remove = function() {
-				setTimeout(function() {
-					var index = items.indexOf(item);
-					items.splice(index, 1);
-				}, 150);
-			};
-
-			if (params.confirm) {
-				if (! confirm(params.confirm)) {
-					return null;
-				}
-			}
-
-			// if (params.closest && params.ev) {
-			// 	$(params.ev.target).closest(params.closest).addClass("v-transition").attr("v-transition");
-			// }
-
-			_remove();
+		datavue.methods._remove = function(parent, keyname, item, confirmStr) {
+			if ((confirmStr||false) && !confirm(confirmStr)) return false;
+			var items = parent[keyname]||[];
+			var index = items.indexOf(item);
+			items.splice(index, 1);
+			Vue.set(parent, keyname, items);
 		};
 
-		if (typeof params.init=="function") {
-			params = params.init.call(this, params);
-		}
+		datavue.methods._array = function(parent, keyname) {
+			if (typeof parent[keyname]!="object") return [];
+			return parent[keyname];
+		};
 		
 		this.datavue = new Vue(params);
-		console.log(this.datavue, this);
 	});
 });
