@@ -1,7 +1,7 @@
 var files = [
-	"//cdnjs.cloudflare.com/ajax/libs/vue/2.5.2/vue.min.js",
-	"//cdn.jsdelivr.net/npm/sortablejs@1.7.0/Sortable.min.js",
-	"//cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.16.0/vuedraggable.min.js",
+	"https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.2/vue.min.js",
+	"https://cdn.jsdelivr.net/npm/sortablejs@1.7.0/Sortable.min.js",
+	"https://cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.16.0/vuedraggable.min.js",
 ];
 
 head.load(files, function() {
@@ -77,6 +77,7 @@ head.load(files, function() {
 			params = params.init.call(this, params);
 		}
 		
-		new Vue(params);
+		this.datavue = new Vue(params);
+		console.log(this.datavue, this);
 	});
 });

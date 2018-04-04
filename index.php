@@ -158,6 +158,94 @@ Tab::add('Flatpicker', function() { ?>
 
 
 
+Tab::add('Firebase', function() { ?>
+<div data-firebase='{ref:"tarotTeller"}' data-firebase-vue="initVue">
+	<button @click="_sync();">_sync();</button>
+	<button @click="_projectAdd();">_projectAdd();</button>
+	<input type="text" v-model="data.name">
+	<hr>
+	<draggable :list="data.todos" :options="{animation:150}">
+		<div class="panel panel-default" v-for="proj in _array(data, 'projects')">
+			<div class="panel-heading">
+				<div class="pull-right">
+					<a href="javascript:;" class="fa fa-fw fa-remove" @click="_projectRemove(proj);"></a>
+				</div>
+				<strong>{{ proj.title||'No title' }}</strong>
+			</div>
+			<div class="panel-body">
+				<input type="text" v-model="proj.title" class="form-control" placeholder="Título">
+				<hr>
+				<button @click="_taskAdd(proj);">_projectAdd();</button>
+				<hr>
+				<div class="row">
+					<draggable :list="data.todos" :options="{animation:150}">
+						<div class="col-xs-4" v-for="task in _array(proj, 'tasks')">
+							<div class="panel panel-default">
+								<div class="panel-body">
+									<div class="pull-right">
+										<a href="javascript:;" class="fa fa-fw fa-remove" @click="_taskRemove(proj, task);"></a>
+									</div>
+									<input type="text" v-model="task.title" class="form-control">
+									<select class="form-control" v-model="task.status">
+										<option value="">Seleciones</option>
+										<option :value="status" v-for="status in _taskStatus()">{{ status.title }}</option>
+									</select>
+								</div>
+							</div>
+						</div>
+					</draggable>
+				</div>
+			</div>
+		</div>
+	</draggable>
+	<pre>{{ $data }}</pre>
+</div>
+<script>
+var initVue = function() {
+	return {
+		data: {
+			test: false,
+		},
+		methods: {
+			_project: function(project) {
+				return this._default(project, {
+					title: "Project #{$id}",
+				});
+			},
+			_projectAdd: function() {
+				this._add(this.data, 'projects', this._project());
+			},
+			_projectRemove: function(project) {
+				this._remove(this.data, 'projects', project, 'Deseja deletar este projeto?');
+			},
+			_task: function(task) {
+				return this._default(task, {
+					title: "Task #{$id}",
+					status: null,
+				});
+			},
+			_taskAdd: function(project) {
+				this._add(project, 'tasks', this._task());
+			},
+			_taskRemove: function(project, task) {
+				this._remove(project, 'tasks', task);
+			},
+			_taskStatus: function() {
+				return [
+					{_id:"not-started", title:"Not started"},
+					{_id:"working", title:"Working"},
+					{_id:"pendencies", title:"Pendencias"},
+					{_id:"Closed", title:"Finalizado"},
+				];
+			},
+		},
+	};
+};
+</script>
+<?php });
+
+
+
 ?>
 
 <!DOCTYPE html>
