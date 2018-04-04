@@ -47,6 +47,8 @@ head.load(files, function() {
 		};
 
 		datavue.methods._add = function(parent, keyname, item) {
+			parent = parent||this;
+			item = (typeof item=="object")? item: {};
 			item._id = this._id();
 			var items = (typeof parent[keyname]=="object")? parent[keyname]: [];
 			items.push(item);
@@ -54,6 +56,7 @@ head.load(files, function() {
 		};
 
 		datavue.methods._remove = function(parent, keyname, item, confirmStr) {
+			parent = parent||this;
 			if ((confirmStr||false) && !confirm(confirmStr)) return false;
 			var items = parent[keyname]||[];
 			var index = items.indexOf(item);
@@ -66,6 +69,6 @@ head.load(files, function() {
 			return parent[keyname];
 		};
 		
-		this.datavue = new Vue(params);
+		new Vue(datavue);
 	});
 });

@@ -42,7 +42,7 @@ class Tab
 
 
 Tab::add('Vue', function() { ?>
-<div data-vue="{init:vueInit}">
+<div data-vue="vueInit">
 	<div class="text-right">
 		<button class="btn btn-default" @click="_todoAdd();">_todoAdd();</button>
 	</div>
@@ -53,7 +53,7 @@ Tab::add('Vue', function() { ?>
 				<div class="panel panel-default">
 					<div class="panel-heading _handle">
 						<div class="pull-right">
-							<a href="javascript:;" class="fa fa-fw fa-remove" @click="_remove(todos, todo, {ev:$event, closest:'.todos-each'});"></a>
+							<a href="javascript:;" class="fa fa-fw fa-remove" @click="_remove(false, 'todos', todo);"></a>
 						</div>
 						<strong>{{ todo.title }}</strong>
 					</div>
@@ -80,21 +80,25 @@ Tab::add('Vue', function() { ?>
 </div>
 
 <script>
-function vueInit(scope) {
-	scope.data.todos = [];
-
-	scope.methods._todoAdd = function(todo) {
-		this._add(this.todos, this._todo());
+function vueInit() {
+	return {
+		data: {
+			todos: [],
+		},
+		methods: {
+			_todoAdd: function(todo) {
+				todo = this._todo(todo);
+				this._add(this, 'todos', todo);
+			},
+			_todo: function(todo) {
+				return this._default(todo, {
+					title: "#{$id}",
+					description: "",
+					status: "ok",
+				});
+			},
+		},
 	};
-
-	scope.methods._todo = function(todo) {
-		return this._default(todo, {
-			title: "#{$_id}",
-			description: "",
-			status: "ok",
-		});
-	};
-	return scope;
 }
 </script>
 <?php });
