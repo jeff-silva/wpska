@@ -35,9 +35,8 @@ var dataFirebase = function() {
 		datavue.methods._default = function(item, defs) {
 			item = (typeof item=="object")? item: {};
 			defs = (typeof defs=="object")? defs: {};
-			for(var i in defs) {if (typeof item[i]=="undefined") item[i]=defs[i]; }
 			item._id = item._id||this._id();
-			for(var i in item) {item[i] = (item[i]||"").replace('{$id}', item._id);}
+			for(var i in defs) {if (typeof item[i]=="undefined") item[i]=defs[i]; }
 			return item;
 		};
 
