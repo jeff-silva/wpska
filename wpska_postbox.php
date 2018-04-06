@@ -15,12 +15,20 @@ class Wpska_Postbox_Actions extends Wpska_Actions
 			$wpska_postbox_boxes = is_array($wpska_postbox_boxes)? $wpska_postbox_boxes: array();
 
 			?>
-			<div id="wpska_settings_postbox">
-				<button type="button" class="btn btn-default" @click="_add(postboxes, _postbox());">Add postbox</button>
-				<br><br>
+			<div data-vue="vuePostbox">
+				<div class="text-right">
+					<button type="button" class="btn btn-default" @click="_postboxAdd();">
+						<i class="fa fa-fw fa-plus"></i> Postbox
+					</button>
+				</div><br>
+
+				<div class="text-center text-muted" v-if="postboxes.length==0">
+					Nenhum Postbox criado
+				</div>
+				
 				<div class="panel panel-default" v-for="postbox in postboxes">
 					<div class="panel-heading">
-						<a href="javascript:;" class="a fa fa-fw fa-remove pull-right" @click="_remove(postboxes, postbox, 'Tem certeza que deseja deletar este postbox?');"></a>
+						<a href="javascript:;" class="a fa fa-fw fa-remove pull-right" @click="_postboxRemove(postbox);"></a>
 						{{postbox.title}}
 					</div>
 					<div class="panel-body">
@@ -46,13 +54,13 @@ class Wpska_Postbox_Actions extends Wpska_Actions
 								</div>
 							</div>
 							<div class="col-sm-12">
-								<button type="button" class="btn btn-default" @click="_add(postbox.fields, _field());">Add field</button>
+								<button type="button" class="btn btn-default" @click="_fieldAdd(postbox);">Add field</button>
 								<br><br>
 								<draggable :list="postbox.fields" :options="{handle:'._handle', animate:150}">
 									<div class="panel panel-default" v-for="field in postbox.fields">
-										<div class="panel-heading _handle" style="cursor:move;">
-											<a href="javascript:;" class="fa fa-fw fa-remove pull-right" @click="_remove(postbox.fields, field, 'Remover este campo?');"></a>
-											::: {{ field.title }}
+										<div class="panel-heading" style="cursor:move;">
+											<a href="javascript:;" class="fa fa-fw fa-remove pull-right" @click="_fieldRemove(postbox, field);"></a>
+											<span class="_handle"></span> {{ field.title }}
 										</div>
 										<div class="panel-body">
 											<div class="row">
@@ -89,60 +97,57 @@ class Wpska_Postbox_Actions extends Wpska_Actions
 				<!-- <pre>{{ $data }}</pre> -->
 			</div>
 			<script>
-			new Vue({
-				el: "#wpska_settings_postbox",
-				data: {
-					postboxes: <?php echo json_encode($wpska_postbox_boxes); ?>,
-					ui_types: <?php echo json_encode(Wpska_Ui::types()); ?>,
-					post_types: <?php echo json_encode(get_post_types()); ?>,
-				},
-				methods: {
-					_add: function(items, item, prepend) {
-						if (prepend||false) {
-							items.unshift(item);
-						}
-						else {
-							items.push(item);
-						}
+			var vuePostbox = function() {
+				return {
+					data: {
+						postboxes: <?php echo json_encode($wpska_postbox_boxes); ?>,
+						ui_types: <?php echo json_encode(Wpska_Ui::types()); ?>,
+						post_types: <?php echo json_encode(get_post_types()); ?>,
 					},
+					methods: {
+						_postbox: function(postbox) {
+							postbox = this._default(postbox, {
+								title: "",
+								text: "",
+								post_types: [],
+								fields: [],
+							});
+							return postbox;
+						},
 
-					_remove: function(items, item, msg_confirm) {
-						if (msg_confirm||false) {
-							if (! confirm(msg_confirm)) {
-								return false;
-							}
-						}
-						var index = items.indexOf(item);
-						items.splice(index, 1);
-					},
+						_postboxAdd: function(postbox) {
+							postbox = this._postbox(postbox);
+							this._add(this, 'postboxes', postbox);
+						},
 
-					_postbox: function(postbox) {
-						var $=jQuery;
-						var _id = Math.round(Math.random()*999);
-						postbox = $.extend(postbox, {
-							id: _id,
-							title: ("Postbox #"+_id),
-							text: "",
-							post_types: [],
-							fields: [],
-						});
-						return postbox;
-					},
+						_postboxRemove: function(postbox) {
+							if (! confirm('Tem certeza que deseja deletar este postbox?')) return false;
+							this._remove(this, 'postboxes', postbox);
+						},
 
-					_field: function(field) {
-						var $=jQuery;
-						var _id = Math.round(Math.random()*999);
-						return $.extend(field, {
-							id: _id,
-							title: ("Field #"+_id),
-							text: ("Input ID #"+_id),
-							field_name: ("field_"+_id),
-							field_type: "",
-							field_params: "",
-						});
+						_field: function(field) {
+							field = this._default(field, {
+								title: "",
+								text: "",
+								field_name: "",
+								field_type: "",
+								field_params: "",
+							});
+							return field;
+						},
+
+						_fieldAdd: function(postbox, field) {
+							field = this._field(field);
+							this._add(postbox, "fields", field);
+						},
+
+						_fieldRemove: function(postbox, field) {
+							if (!confirm("Tem certeza que deseja remover este campo?")) return false;
+							this._remove(postbox, "fields", field);
+						},
 					},
-				},
-			});
+				};
+			};
 			</script>
 		<?php });
 	}
