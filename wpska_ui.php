@@ -84,19 +84,23 @@ class Wpska_Ui
 			'frete' => 'Cálculo de frete',
 		);
 
+		$vars = get_class_vars(__CLASS__);
 		$return = array();
 		foreach(get_class_methods(__CLASS__) as $method) {
 			if (in_array($method, array('_params', 'types'))) continue;
-			$return[] = array(
-				'title' => (isset($titles[$method])? $titles[$method]: $method),
-				'method' => $method,
-			);
+			$row = array('title'=>$method);
+			if (isset($vars[$method]) AND is_array($vars[$method])) {
+				$row = array_merge($row, $vars[$method]);
+			}
+			$row['method'] = $method;
+			$return[] = $row;
 		}
 		return $return;
 	}
 
 
 
+	static $text = array('title' => 'Texto simples');
 	static function text($value=null, $params=null)
 	{
 		$params = self::_params($params, array(
@@ -106,6 +110,8 @@ class Wpska_Ui
 	}
 
 
+
+	static $textarea = array('title' => 'Texto multilinha');
 	static function textarea($value=null, $params=null)
 	{
 		$params = self::_params($params, array());
@@ -113,6 +119,75 @@ class Wpska_Ui
 	}
 
 
+	static $select = array('title' => 'Caixa de seleção');
+	static function select($value=null, $params=null)
+	{
+		$params = self::_params($params, array(
+			'multiple' => 0,
+			'options' => array(),
+		));
+
+		$options = array();
+		foreach(explode("\n", $params['options']) as $opt) {
+			$exp = explode(':', $opt);
+			$key = trim($exp[0]);
+			$val = trim($exp[0]);
+
+			if (isset($exp[1])) {
+				$key = trim($exp[0]);
+				$val = trim($exp[1]);
+			}
+
+			$options[$key] = $val;
+		}
+
+		wpska_header();
+
+		?>
+		<div class="wpska-ui-select">
+			<input type="text" value="<?php echo $value; ?>" class="form-control wpska-ui-select-input" onfocus="_wpskaUiSelectToggle(event);">
+			<ul class="list-group wpska-ui-select-options">
+				<?php foreach($options as $key=>$val): ?>
+				<li class="list-group-item">
+					<label>
+						<?php $type = $params['multiple']? 'checkbox': 'radio';
+						$checked = $value==$key? 'checked': null; ?>
+						<input type="<?php echo $type; ?>" name="<?php echo $params['name']; ?>" value="<?php echo $key; ?>" <?php echo $checked; ?> >
+						<div><?php echo $val; ?></div>
+					</label>
+				</li>
+				<?php endforeach; ?>
+			</ul>
+		</div>
+
+		<style>
+		.wpska-ui-select {position:relative;}
+		.wpska-ui-select .wpska-ui-select-options {position:absolute; top:100%; width:100%; display:none; z-index:9;}
+		.wpska-ui-select label {display:block;}
+		.wpska-ui-select label>input {display:none;}
+		.wpska-ui-select label>input:checked + div:before {float:right; font-family:FontAwesome; content:"\f00c";}
+		</style>
+
+		<script>
+		var _wpskaUiSelectToggle = function(ev) {
+			var $parent = $(ev.target).closest(".wpska-ui-select");
+			var $input = $parent.find(".wpska-ui-select-input");
+			var $options = $parent.find(".wpska-ui-select-options");
+			$options.fadeIn(200);
+			$(document).off("click", _wpskaUiSelectWindowClick).on("click", _wpskaUiSelectWindowClick);
+		};
+
+		var _wpskaUiSelectWindowClick = function(ev) {
+			if ( $(ev.target).closest(".wpska-ui-select").length==0 ) {
+				$(".wpska-ui-select-options").fadeOut(200);
+			}
+		};
+		</script>
+		<?php
+	}
+
+
+	static $media = array('title' => 'Arquivo de midia');
 	static function media($value=null, $params=null)
 	{
 		$params = self::_params($params, array());
@@ -177,6 +252,7 @@ class Wpska_Ui
 
 
 
+	static $medias = array('title' => 'Arquivos de midia');
 	static function medias($value=null, $params=null)
 	{
 		$params = self::_params($params, array());
@@ -237,6 +313,7 @@ class Wpska_Ui
 
 
 
+	static $url = array('title' => 'URL Wordpress');
 	static function url($value, $params=null)
 	{
 		$params = self::_params($params, array());
@@ -245,6 +322,7 @@ class Wpska_Ui
 
 
 
+	static $address = array('title' => 'Endereço');
 	static function address($value=null, $params=null)
 	{
 		$params = self::_params($params, array());
@@ -318,10 +396,12 @@ class Wpska_Ui
 
 
 	
+	static $color = array('title' => 'Seleção de cor');
 	static function color($value=null, $params=null) { echo '<input type="text" class="form-control" value="color">'; }
 	
 
 
+	static $icon = array('title' => 'Seleção de ícone');
 	static function icon($value=null, $params=null) {
 		$params = self::_params($params, array());
 		?>
@@ -378,6 +458,8 @@ class Wpska_Ui
 	}
 	
 
+	
+	static $posts = array('title' => 'Seleção de posts');
 	static function posts($value=null, $params=null) {
 
 		$params = self::_params($params, array());
@@ -473,6 +555,7 @@ class Wpska_Ui
 	}
 
 
+	static $frete = array('title' => 'Cálculo de frete');
 	static function frete($value=null, $params=null) {
 		$params = self::_params($params, array(
 			'nCdEmpresa' => '',

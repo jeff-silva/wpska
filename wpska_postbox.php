@@ -85,6 +85,13 @@ class Wpska_Postbox_Actions extends Wpska_Actions
 													<strong>Descrição</strong>
 													<textarea v-model="field.text" class="form-control"></textarea>
 												</div>
+												<div class="col-xs-12" v-if="field.field_type=='select'"><br>
+													<strong>Options</strong>
+													<textarea v-model="field.field_options" class="form-control"></textarea>
+													<small class="text-muted"><strong>Format:</strong><br>
+													Value 1 <br>
+													value-2: Value 2</small>
+												</div>
 											</div>
 										</div>
 									</div>
@@ -132,6 +139,7 @@ class Wpska_Postbox_Actions extends Wpska_Actions
 								field_name: "",
 								field_type: "",
 								field_params: "",
+								field_options: "",
 							});
 							return field;
 						},
@@ -169,6 +177,7 @@ class Wpska_Postbox_Actions extends Wpska_Actions
 					foreach($postbox['fields'] as $field) {
 						parse_str($field['field_params'], $field['field_params']);
 						$field['field_params']['name'] = "postmeta[{$field['field_name']}]";
+						$field['field_params']['options'] = $field['field_options'];
 						$value = get_post_meta($post->ID, $field['field_name'], true);
 
 						echo '<tr>';
