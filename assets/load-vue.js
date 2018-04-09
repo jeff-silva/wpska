@@ -62,7 +62,8 @@ var _loadVue = function() {
 			return parent[keyname];
 		};
 		
-		new Vue(datavue);
+		var app = new Vue(datavue);
+		this.vue = function() { return app; };
 	});
 };
 

@@ -14,5 +14,6 @@ $("[data-codemirror]").each(function() {
 		("https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.36.0/mode/"+opts.mode+"/"+opts.mode+".min.js"),
 	], function() {
 		var editor = CodeMirror.fromTextArea(target, opts);
+		target.codemirror = function() { return editor; };
 	});
 });

@@ -26,7 +26,8 @@ $.wpskaLoad([
 			time_24hr: true,
 			locale: Portuguese,
 		});
-		flatpickr(this, params);
+		var pickr = flatpickr(this, params);
 		// $(this).flatpickr(params);
+		this.flatpickr = function() { return pickr; };
 	});
 });
