@@ -1,19 +1,29 @@
-$("[data-codemirror]").each(function() {
-	var opts = $(this).attr("data-codemirror")||"{}";
-	try { eval('opts='+opts); } catch(e) { opts={}; }
-	opts.lineNumbers = (typeof opts.lineNumbers=="undefined")? true: opts.lineNumbers;
-	opts.mode = opts.mode||"htmlmixed";
-	opts.theme = opts.theme||"ambiance";
+$.wpskaLoad([
+	"https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.36.0/codemirror.min.css",
+	"https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.36.0/codemirror.min.js",
+	"https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.36.0/theme/ambiance.min.css",
+	"https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.36.0/mode/xml/xml.min.js",
+	"https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.36.0/mode/javascript/javascript.min.js",
+	"https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.36.0/mode/css/css.min.js",
+	"https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.36.0/mode/htmlmixed/htmlmixed.min.js",
+	"https://cdn.jsdelivr.net/npm/emmet-codemirror@1.2.5/dist/emmet.js",
+], function() {
+	$("[data-codemirror]").each(function() {
+		var target = this;
+		var opts = $(this).wpskaParams("data-codemirror", {
+			lineNumbers: true,
+			selectionPointer: true,
+			htmlMode: true,
+			mode: "text/html",
+			theme: "ambiance",
+			tabMode: "indent",
+		});
 
-	var target = this;
-
-	$.wpskaLoad([
-		"https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.36.0/codemirror.min.css",
-		"https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.36.0/codemirror.min.js",
-		("https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.36.0/theme/"+opts.theme+".min.css"),
-		("https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.36.0/mode/"+opts.mode+"/"+opts.mode+".min.js"),
-	], function() {
 		var editor = CodeMirror.fromTextArea(target, opts);
+		emmetCodeMirror(editor, {
+			'Ctrl-E': 'emmet.expand_abbreviation_with_tab',
+			// 'Cmd-Alt-B': 'emmet.balance_outward',
+		});
 		target.codemirror = function() { return editor; };
 	});
 });
