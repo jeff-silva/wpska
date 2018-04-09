@@ -250,6 +250,13 @@ var initVue = function() {
 
 
 
+Tab::add('Wpska test', function() { ?>
+<div data-vue="{data:{test:true}}">
+	<wpska-test name="aaa" v-model="test"></wpska-test>
+	<pre>{{ $data }}</pre>
+</div>
+<?php });
+
 ?>
 
 <!DOCTYPE html>

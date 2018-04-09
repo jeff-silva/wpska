@@ -1,13 +1,7 @@
-var files = [
-	"https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.2/vue.min.js",
-	"https://cdn.jsdelivr.net/npm/sortablejs@1.7.0/Sortable.min.js",
-	"https://cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.16.0/vuedraggable.min.js",
-];
-
-head.load(files, function() {
+var _loadVue = function() {
 	$("[data-vue]").each(function() {
 		
-		var datavue = $(this).params("data-vue", {
+		var datavue = $(this).wpskaParams("data-vue", {
 			data: {},
 			methods: {},
 		});
@@ -70,4 +64,10 @@ head.load(files, function() {
 		
 		new Vue(datavue);
 	});
-});
+};
+
+$.wpskaLoad([
+	"https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.2/vue.min.js",
+	"https://cdn.jsdelivr.net/npm/sortablejs@1.7.0/Sortable.min.js",
+	"https://cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.16.0/vuedraggable.min.js",
+], _loadVue);

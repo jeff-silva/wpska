@@ -1,10 +1,7 @@
-var files = [
+$.wpskaLoad([
 	"https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.4.3/flatpickr.min.css",
 	"https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.4.3/flatpickr.min.js",
-];
-
-
-head.load(files, function() {
+], function() {
 
 	var Portuguese = {
 		weekdays: {
@@ -20,7 +17,7 @@ head.load(files, function() {
 
 
 	$("[data-flatpickr]").each(function() {
-		var params = $(this).params("data-flatpickr", {
+		var params = $(this).wpskaParams("data-flatpickr", {
 			dateFormat: 'Y-m-d H:i:S',
 			altInput: true,
 			altFormat: 'd/m/Y - H:i',
@@ -29,6 +26,7 @@ head.load(files, function() {
 			time_24hr: true,
 			locale: Portuguese,
 		});
-		$(this).flatpickr(params);
+		flatpickr(this, params);
+		// $(this).flatpickr(params);
 	});
 });

@@ -1,8 +1,18 @@
-var dataFirebase = function() {
+$("[data-firebase]").wpskaLoad([
+	"https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.2/vue.min.js",
+	"https://cdn.jsdelivr.net/npm/sortablejs@1.7.0/Sortable.min.js",
+	"https://cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.16.0/vuedraggable.min.js",
+	"https://www.gstatic.com/firebasejs/4.12.1/firebase.js",
+	"https://www.gstatic.com/firebasejs/4.12.1/firebase-app.js",
+	// "https://www.gstatic.com/firebasejs/4.12.1/firebase-auth.js",
+	"https://www.gstatic.com/firebasejs/4.12.1/firebase-database.js",
+	// "https://www.gstatic.com/firebasejs/4.12.1/firebase-firestore.js",
+	// "https://www.gstatic.com/firebasejs/4.12.1/firebase-messaging.js",
+], function() {
 
 	$("[data-firebase]").each(function() {
 
-		var datavue = $(this).params("data-firebase-vue", {
+		var datavue = $(this).wpskaParams("data-firebase-vue", {
 			data: {},
 			methods: {},
 		});
@@ -64,7 +74,7 @@ var dataFirebase = function() {
 		};
 		
 
-		var datafirebase = $(this).params("data-firebase", {
+		var datafirebase = $(this).wpskaParams("data-firebase", {
 			apiKey: "AIzaSyAvHjX_XYd4AmgF1J-x8S9gO499P_NtPvA",
 			authDomain: "torrid-torch-779.firebaseapp.com",
 			databaseURL: "https://torrid-torch-779.firebaseio.com",
@@ -86,17 +96,4 @@ var dataFirebase = function() {
 		});
 		var app = new Vue(datavue);
 	});
-};
-
-
-$("[data-firebase]").depends([
-	"https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.2/vue.min.js",
-	"https://cdn.jsdelivr.net/npm/sortablejs@1.7.0/Sortable.min.js",
-	"https://cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.16.0/vuedraggable.min.js",
-	"https://www.gstatic.com/firebasejs/4.12.1/firebase.js",
-	"https://www.gstatic.com/firebasejs/4.12.1/firebase-app.js",
-	// "https://www.gstatic.com/firebasejs/4.12.1/firebase-auth.js",
-	"https://www.gstatic.com/firebasejs/4.12.1/firebase-database.js",
-	// "https://www.gstatic.com/firebasejs/4.12.1/firebase-firestore.js",
-	// "https://www.gstatic.com/firebasejs/4.12.1/firebase-messaging.js",
-], dataFirebase);
+});

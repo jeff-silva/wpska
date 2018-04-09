@@ -296,6 +296,7 @@ function wpska_modules($keyname=null) {
 	$modules['wpska_postbox'] = array('title'=>'Gerenciamento de postboxes.');
 	$modules['wpska_posttypes'] = array('title'=>'Post types');
 	$modules['wpska_theme'] = array('title'=>'Customização de tema.');
+	$modules['wpska_maintenance'] = array('title'=>'Manutenção.');
 
 	foreach($modules as $key=>$mod) {
 		$mod['id'] = $key;
