@@ -66,7 +66,7 @@ $.wpskaLoad = function(files, callback) {
 	};
 
 
-	__loadCall();
+	__loadCall.call();
 };
 
 // wpskaLoad
@@ -82,8 +82,7 @@ $.fn.wpskaParams = function(attr, defs) {
 	return params;
 };
 
-
-$(function() {
+jQuery(document).ready(function($) {
 	$.wpskaLoad([
 		"https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js",
 		"https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css",
