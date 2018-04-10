@@ -7,82 +7,80 @@ var index = scripts.length - 1;
 var __dir = (scripts[index].src||"").replace('wpska.js', '');
 function _dir(path) { return (__dir+path).replace(/^\/|\/$/g, ''); }
 
-(function($) {
-	// wpskaLoad
-	$.wpskaLoad = function(files, callback) {
-		var __loaded = 0;
-		var __loadIndex = 0;
+// wpskaLoad
+$.wpskaLoad = function(files, callback) {
+	var __loaded = 0;
+	var __loadIndex = 0;
 
-		var __loadCall = function() {
-			if (typeof files[__loadIndex]=="undefined") return;
-			var filename = files[__loadIndex];
-			var extension = filename.split('.').pop();
-			if (filename[0]=="/") { filename = __dir+filename; }
-			// console.log('Loading %s/%s - %s', __loadIndex, files.length-1, filename);
+	var __loadCall = function() {
+		if (typeof files[__loadIndex]=="undefined") return;
+		var filename = files[__loadIndex];
+		var extension = filename.split('.').pop();
+		if (filename[0]=="/") { filename = __dir+filename; }
+		// console.log('Loading %s/%s - %s', __loadIndex, files.length-1, filename);
 
-			var __loadCallback = function() {
-				__loadIndex++;
-				__loadCall();
-				if (__loadIndex==files.length && typeof callback=="function") {
-					callback.call(this);
-				}
-			};
-
-			if (["js"].indexOf(extension)>=0) {
-				var tag = document.createElement('script');
-				tag.src = filename;
-				tag.onload = __loadCallback;
+		var __loadCallback = function() {
+			__loadIndex++;
+			__loadCall();
+			if (__loadIndex==files.length && typeof callback=="function") {
+				callback.call(this);
 			}
-
-			else if (["css"].indexOf(extension)>=0) {
-				var tag = document.createElement('link');
-				tag.rel = "stylesheet";
-				tag.href = filename;
-				tag.onload = __loadCallback;
-			}
-
-			else if (["php", "html"].indexOf(extension)>=0) {
-				var ntag = document.createElement('script');
-				ntag.src = "https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.2/vue.min.js";
-				document.body.appendChild(ntag);
-
-				var ntag = document.createElement('script');
-				ntag.src = "https://cdn.jsdelivr.net/npm/sortablejs@1.7.0/Sortable.min.js";
-				document.body.appendChild(ntag);
-
-				var ntag = document.createElement('script');
-				ntag.src = "https://cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.16.0/vuedraggable.min.js";
-				document.body.appendChild(ntag);
-
-				var ntag = document.createElement('script');
-				ntag.src = _dir("/assets/vuel.js");
-				document.body.appendChild(ntag);
-
-				var tag = document.createElement('link');
-				tag.rel = "import";
-				tag.href = filename;
-				tag.onload = __loadCallback;
-			}
-			document.body.appendChild(tag);
 		};
 
+		if (["js"].indexOf(extension)>=0) {
+			var tag = document.createElement('script');
+			tag.src = filename;
+			tag.onload = __loadCallback;
+		}
 
-		__loadCall();
+		else if (["css"].indexOf(extension)>=0) {
+			var tag = document.createElement('link');
+			tag.rel = "stylesheet";
+			tag.href = filename;
+			tag.onload = __loadCallback;
+		}
+
+		else if (["php", "html"].indexOf(extension)>=0) {
+			var ntag = document.createElement('script');
+			ntag.src = "https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.2/vue.min.js";
+			document.body.appendChild(ntag);
+
+			var ntag = document.createElement('script');
+			ntag.src = "https://cdn.jsdelivr.net/npm/sortablejs@1.7.0/Sortable.min.js";
+			document.body.appendChild(ntag);
+
+			var ntag = document.createElement('script');
+			ntag.src = "https://cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.16.0/vuedraggable.min.js";
+			document.body.appendChild(ntag);
+
+			var ntag = document.createElement('script');
+			ntag.src = _dir("/assets/vuel.js");
+			document.body.appendChild(ntag);
+
+			var tag = document.createElement('link');
+			tag.rel = "import";
+			tag.href = filename;
+			tag.onload = __loadCallback;
+		}
+		document.body.appendChild(tag);
 	};
 
-	// wpskaLoad
-	$.fn.wpskaLoad = function(files, callback) { if (this.length>0) { $.wpskaLoad(files, callback); } };
 
-	// wpskaParams
-	$.fn.wpskaParams = function(attr, defs) {
-		var params = $(this).attr(attr)||"";
-		if (typeof window[params]=="function") { params = window[params](); }
-		else if (typeof params != "object") {try { eval('params='+params); } catch(e) { params={}; }}
-		defs = (typeof defs=="object")? defs: {};
-		for(var i in defs) { if (typeof params[i]=="undefined") params[i]=defs[i]; }
-		return params;
-	};
-})(jQuery);
+	__loadCall();
+};
+
+// wpskaLoad
+$.fn.wpskaLoad = function(files, callback) { if (this.length>0) { $.wpskaLoad(files, callback); } };
+
+// wpskaParams
+$.fn.wpskaParams = function(attr, defs) {
+	var params = $(this).attr(attr)||"";
+	if (typeof window[params]=="function") { params = window[params](); }
+	else if (typeof params != "object") {try { eval('params='+params); } catch(e) { params={}; }}
+	defs = (typeof defs=="object")? defs: {};
+	for(var i in defs) { if (typeof params[i]=="undefined") params[i]=defs[i]; }
+	return params;
+};
 
 
 $(function() {
