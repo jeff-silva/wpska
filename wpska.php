@@ -185,10 +185,10 @@ class Wpska_Posts
 	{
 		global $post;
 		if (!empty($this->posts) AND is_callable($callback)) {
-			foreach($this->posts as $_post) {
+			foreach($this->posts as $i=>$_post) {
 				$post = $_post;
 				setup_postdata($_post);
-				call_user_func($callback, $post);
+				call_user_func($callback, $post, $i);
 			}
 			wp_reset_postdata();
 		}
