@@ -293,6 +293,14 @@ Tab::add('Wpska test', function() { ?>
 	<script src="wpska.js"></script>
 </head>
 <body>
+	
+	<!-- Loading -->
+	<div class="wpska-loading" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#fff; z-index:99;">
+		<div style="position:absolute; left:50%; top:50%; transform:translate(-50%, -50%); text-align:center;">
+			<div class="wpska-loading-01" style="width:50px; height:50px;"></div>
+		</div>
+	</div>
+
 	<br>
 	<div class="container">
 		<div class="row">

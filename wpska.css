@@ -8,6 +8,14 @@
 .wpska-popup {display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,.5); z-index:99999;}
 .wpska-popup>* {position:absolute; left:50%; top:50%; max-width:100%; transform:translate(-50%, -50%); box-shadow:5px 5px 30px 0px rgba(0,0,0,.5) !important; border-radius:0 !important; max-height:90%; overflow:auto;}
 
+/* Loading spinners | https://stephanwagner.me/only-css-loading-spinner */
+@keyframes _wpska_loading { to {transform: rotate(360deg);} }
+.wpska-loading-01, .wpska-loading-02, .wpska-loading-03, .wpska-loading-04, .wpska-loading-05 {display:inline-block; vertical-align:middle; position:relative; width:20px; height:20px;}
+.wpska-loading-01:before {content:''; display:inline-block; width:100%; height:100%; margin:0px; border-radius:50%; border:2px solid #ccc; border-top-color: #333; animation: _wpska_loading .6s linear infinite;}
+.wpska-loading-02:before {content:''; display:inline-block; width:100%; height:100%; margin:0px; border-radius:50%; border:1px solid #ccc; border-top-color: #07d; animation: _wpska_loading .6s linear infinite;}
+.wpska-loading-03:before {content:''; display:inline-block; width:100%; height:100%; margin:0px; border-radius:50%; border: 2px solid transparent; border-top-color: #07d; border-bottom-color: #07d; animation: _wpska_loading .6s linear infinite;}
+.wpska-loading-04:before {content:''; display:inline-block; width:100%; height:100%; margin:0px; border-radius:50%; border-top: 2px solid #07d; border-right: 2px solid transparent; animation: _wpska_loading .6s linear infinite;}
+.wpska-loading-05:before {content:''; display:inline-block; width:100%; height:100%; margin:0px; border-radius:50%; border: 1px solid #f6f; border-top-color: #0e0; border-right-color: #0dd; border-bottom-color: #f90; animation: _wpska_loading .6s linear infinite;}
 
 /* Bugfixes */
 .wp-admin select.form-control {padding:7px; height:auto;}

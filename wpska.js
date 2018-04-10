@@ -89,7 +89,7 @@ jQuery(document).ready(function($) {
 		"https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js",
 		"https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css",
 		"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css",
-		"https://wpska.herokuapp.com/wpska.css",
+		_dir("/wpska.css"),
 	], function() {
 		$("[data-vue]").wpskaLoad(["/assets/load-vue.js"]);
 		$("[data-slick]").wpskaLoad(["/assets/load-slick.js"]);
@@ -97,5 +97,12 @@ jQuery(document).ready(function($) {
 		$("[data-flatpickr]").wpskaLoad(["/assets/load-flatpickr.js"]);
 		$("[data-firebase]").wpskaLoad(["/assets/load-firebase.js"]);
 		$("wpska-test").wpskaLoad(["/assets/vuel.js", "/components/wpska-test/index.php"]);
+	});
+
+	// Loading
+	$(".wpska-loading").not("body").fadeOut(200);
+	$(window).on('beforeunload', function() {
+		$("body").addClass("wpska-loading");
+		$(".wpska-loading").not("body").fadeIn(200);
 	});
 });
