@@ -23,7 +23,7 @@ function _dir(path) { return (__dir+path).replace(/^\/|\/$/g, ''); }
 			var __loadCallback = function() {
 				__loadIndex++;
 				__loadCall();
-				if (__loadIndex==files.length-1 && typeof callback=="function") {
+				if (__loadIndex==files.length && typeof callback=="function") {
 					callback.call(this);
 				}
 			};
@@ -44,26 +44,26 @@ function _dir(path) { return (__dir+path).replace(/^\/|\/$/g, ''); }
 			else if (["php", "html"].indexOf(extension)>=0) {
 				var ntag = document.createElement('script');
 				ntag.src = "https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.2/vue.min.js";
-				document.head.appendChild(ntag);
+				document.body.appendChild(ntag);
 
 				var ntag = document.createElement('script');
 				ntag.src = "https://cdn.jsdelivr.net/npm/sortablejs@1.7.0/Sortable.min.js";
-				document.head.appendChild(ntag);
+				document.body.appendChild(ntag);
 
 				var ntag = document.createElement('script');
 				ntag.src = "https://cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.16.0/vuedraggable.min.js";
-				document.head.appendChild(ntag);
+				document.body.appendChild(ntag);
 
 				var ntag = document.createElement('script');
 				ntag.src = _dir("/assets/vuel.js");
-				document.head.appendChild(ntag);
+				document.body.appendChild(ntag);
 
 				var tag = document.createElement('link');
 				tag.rel = "import";
 				tag.href = filename;
 				tag.onload = __loadCallback;
 			}
-			document.head.appendChild(tag);
+			document.body.appendChild(tag);
 		};
 
 
