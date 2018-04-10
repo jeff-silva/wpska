@@ -32,7 +32,7 @@ class Tab
 				call_user_func($tab['callback']);
 				$content = ob_get_clean();
 				echo $content;
-				echo '<br><textarea data-codemirror="{readOnly:true}">'. htmlspecialchars($content) .'</textarea>';
+				echo '<br><br><textarea data-codemirror="{readOnly:true}">'. htmlspecialchars($content) .'</textarea>';
 			}
 		}
 	}
@@ -108,35 +108,36 @@ function vueInit() {
 
 Tab::add('Slick', function() { ?>
 <div data-slick="{slidesToShow:1, arrows:true, asNavFor:'.slick-nav'}" class="slick slick-big">
-	<div><div class="cover" style="background-image:url(https://picsum.photos/600/400?0);"></div></div>
-	<div><div class="cover" style="background-image:url(https://picsum.photos/600/400?1);"></div></div>
-	<div><div class="cover" style="background-image:url(https://picsum.photos/600/400?2);"></div></div>
-	<div><div class="cover" style="background-image:url(https://picsum.photos/600/400?3);"></div></div>
-	<div><div class="cover" style="background-image:url(https://picsum.photos/600/400?4);"></div></div>
-	<div><div class="cover" style="background-image:url(https://picsum.photos/600/400?5);"></div></div>
-	<div><div class="cover" style="background-image:url(https://picsum.photos/600/400?6);"></div></div>
-	<div><div class="cover" style="background-image:url(https://picsum.photos/600/400?7);"></div></div>
-	<div><div class="cover" style="background-image:url(https://picsum.photos/600/400?8);"></div></div>
-	<div><div class="cover" style="background-image:url(https://picsum.photos/600/400?9);"></div></div>
+	<div><div class="wpska-cover" style="background-image:url(https://picsum.photos/600/400?0);"></div></div>
+	<div><div class="wpska-cover" style="background-image:url(https://picsum.photos/600/400?1);"></div></div>
+	<div><div class="wpska-cover" style="background-image:url(https://picsum.photos/600/400?2);"></div></div>
+	<div><div class="wpska-cover" style="background-image:url(https://picsum.photos/600/400?3);"></div></div>
+	<div><div class="wpska-cover" style="background-image:url(https://picsum.photos/600/400?4);"></div></div>
+	<div><div class="wpska-cover" style="background-image:url(https://picsum.photos/600/400?5);"></div></div>
+	<div><div class="wpska-cover" style="background-image:url(https://picsum.photos/600/400?6);"></div></div>
+	<div><div class="wpska-cover" style="background-image:url(https://picsum.photos/600/400?7);"></div></div>
+	<div><div class="wpska-cover" style="background-image:url(https://picsum.photos/600/400?8);"></div></div>
+	<div><div class="wpska-cover" style="background-image:url(https://picsum.photos/600/400?9);"></div></div>
 </div>
-<div data-slick="{slidesToShow:5, arrows:false, dots:true, centerMode:true, asNavFor:'.slick-big'}" class="slick slick-nav">
-	<div><div class="cover" style="background-image:url(https://picsum.photos/600/400?0);"></div></div>
-	<div><div class="cover" style="background-image:url(https://picsum.photos/600/400?1);"></div></div>
-	<div><div class="cover" style="background-image:url(https://picsum.photos/600/400?2);"></div></div>
-	<div><div class="cover" style="background-image:url(https://picsum.photos/600/400?3);"></div></div>
-	<div><div class="cover" style="background-image:url(https://picsum.photos/600/400?4);"></div></div>
-	<div><div class="cover" style="background-image:url(https://picsum.photos/600/400?5);"></div></div>
-	<div><div class="cover" style="background-image:url(https://picsum.photos/600/400?6);"></div></div>
-	<div><div class="cover" style="background-image:url(https://picsum.photos/600/400?7);"></div></div>
-	<div><div class="cover" style="background-image:url(https://picsum.photos/600/400?8);"></div></div>
-	<div><div class="cover" style="background-image:url(https://picsum.photos/600/400?9);"></div></div>
+<div data-slick="{slidesToShow:5, arrows:false, centerMode:true, focusOnSelect:true, asNavFor:'.slick-big'}" class="slick slick-nav">
+	<div><div class="wpska-cover" style="background-image:url(https://picsum.photos/600/400?0);"></div></div>
+	<div><div class="wpska-cover" style="background-image:url(https://picsum.photos/600/400?1);"></div></div>
+	<div><div class="wpska-cover" style="background-image:url(https://picsum.photos/600/400?2);"></div></div>
+	<div><div class="wpska-cover" style="background-image:url(https://picsum.photos/600/400?3);"></div></div>
+	<div><div class="wpska-cover" style="background-image:url(https://picsum.photos/600/400?4);"></div></div>
+	<div><div class="wpska-cover" style="background-image:url(https://picsum.photos/600/400?5);"></div></div>
+	<div><div class="wpska-cover" style="background-image:url(https://picsum.photos/600/400?6);"></div></div>
+	<div><div class="wpska-cover" style="background-image:url(https://picsum.photos/600/400?7);"></div></div>
+	<div><div class="wpska-cover" style="background-image:url(https://picsum.photos/600/400?8);"></div></div>
+	<div><div class="wpska-cover" style="background-image:url(https://picsum.photos/600/400?9);"></div></div>
 </div>
 <style>
 .slick {background:#eee;}
-.slick-big .cover {width:100%; height:400px;}
-.slick-nav .cover {width:100%; height:100px; border:solid 5px #fff;}
-.slick-prev {margin-left:30px; z-index:9;}
-.slick-next {margin-right:30px; z-index:9;}
+.slick-big .wpska-cover {width:100%; height:400px;}
+.slick-nav .wpska-cover {width:100%; height:100px; border:solid 5px #fff;}
+.slick-next, .slick-prev {width:10% !important; height:100% !important; background:#0000006e !important; border:solid !important; z-index:9 !important;}
+.slick-prev {left:0px !important;}
+.slick-next {right:0px !important;}
 </style>
 <?php });
 
@@ -244,6 +245,31 @@ var initVue = function() {
 			},
 		},
 	};
+};
+</script>
+<?php });
+
+
+
+Tab::add('Codemirror', function() { ?>
+<textarea id="codemirror-01" data-codemirror="{}">&lt;div class="link-container"&gt;
+	&lt;a href="link-url"&gt;Link&lt;/a&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+var numer = 1;
+&lt;/script&gt;
+
+&lt;style&gt;
+.link-container a {border:solid 1px #ddd;}
+&lt;/style&gt;</textarea>
+
+<button class="btn btn-default" onclick="_setText();">_setText();</button>
+
+<script>
+var _setText = function() {
+	var editor = $("#codemirror-01").get(0).codemirror();
+	editor.getDoc().setValue('var msg = "Hi";');
 };
 </script>
 <?php });
