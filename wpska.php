@@ -131,6 +131,33 @@ class Wpska_Ajax
 }
 
 
+
+class Wpska_Api
+{
+	public function __construct()
+	{
+		$me = $this;
+		add_action('rest_api_init', function() use($me) {
+			foreach(get_class_methods($me) as $method) {
+				if ($method=='__construct') continue;
+				$params = $me->{$method};
+				$params = is_array($params)? $params: array();
+				$params = array_merge(array(
+					'namespace' => 'wpska/v1',
+					'route' => $method,
+					'params' => array(
+						'methods' => 'GET',
+						'callback' => null,
+					),
+				), $params);
+				$params['params']['callback'] = array($me, $method);
+				register_rest_route($params['namespace'], $params['route'], $params['params']);
+			}
+		});
+	}
+}
+
+
 class Wpska_Posts
 {
 	
