@@ -785,7 +785,7 @@ class Wpska_Base_Actions extends Wpska_Actions
 			<h1>Help Settings</h1>
 			<form action="" method="post" autocomplete="off">
 			<?php do_action('wpska_settings');
-			wpska_tab_render(); ?>
+			wpska_tab_render('tab_id=wpska_settings'); ?>
 			<div class="panel-footer text-right">
 				<input type="submit" name="wpska-settings" value="Salvar" class="btn btn-primary">
 			</div>
