@@ -408,6 +408,7 @@ function wpska_tab_render($settings=null) {
 	$settings = array_merge(array(
 		'active' => 0,
 		'link' => null,
+		'tab_id' => null,
 	), $settings);
 
 	?>
@@ -431,10 +432,10 @@ function wpska_tab_render($settings=null) {
 
 
 	<?php else: ?>
-	<ul class="nav nav-tabs" role="tablist">
+	<ul class="nav nav-tabs" role="tablist" id="<?php echo $settings['tab_id']; ?>">
 		<?php foreach($tabs as $i=>$tab): ?>
 		<li role="presentation" class="<?php echo $i==$settings['active']? 'active': null; ?>">
-			<a href="#<?php echo $tab['id']; ?>" data-toggle="tab"><?php echo $tab['title']; ?></a>
+			<a href="#<?php echo $tab['id']; ?>" data-toggle="tab" onclick="_wpskaTabsStore('<?php echo $settings['tab_id']; ?>', '<?php echo $i; ?>');"><?php echo $tab['title']; ?></a>
 		</li>
 		<?php endforeach; ?>
 	</ul>
@@ -448,6 +449,21 @@ function wpska_tab_render($settings=null) {
 		</div>
 		<?php endforeach; ?>
 	</div>
+
+	<script>
+	var _wpskaTabsStore = function(tab_id, index) {
+		if (! (tab_id||false)) return;
+		localStorage.setItem(tab_id, index);
+	};
+
+	var si = setInterval(function() {
+		if (jQuery.fn.tab||false) {
+			clearInterval(si);
+			var tab_index = localStorage.getItem("<?php echo $settings['tab_id']; ?>")||0;
+			$("#<?php echo $settings['tab_id']; ?>").find(">li").eq(tab_index).find("a").tab('show');
+		}
+	}, 500);
+	</script>
 	<?php endif; ?>
 	<?php
 }
