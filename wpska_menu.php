@@ -147,7 +147,8 @@ class Wpska_Menu
 		}
 		
 
-		$result = _wpska_menu_tree($result);		
+		$result = _wpska_menu_tree($result);
+		$id = uniqid('wpska-menu-');
 
 		if ($settings['responsive']) {
 			ob_start(); ?>
