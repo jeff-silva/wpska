@@ -158,6 +158,144 @@ class Wpska_Api
 }
 
 
+class Wpska_Table
+{
+	public $pk = null;
+	public $pkid = null;
+	public $table = null;
+	public $fields = array();
+	public $error = array();
+	public $data = array();
+
+	public function __construct($data=array())
+	{
+		global $wpdb;
+		if (! $this->table) {
+			$this->table = str_replace('wpska_', $wpdb->prefix, strtolower(get_class($this)));
+		}
+
+		foreach($this->fields as $key=>$type) {
+			if ($type=='pk') $this->pk = $key;
+		}
+
+		$this->loadData($data);
+	}
+
+	public function loadData($data)
+	{
+		foreach($this->fields as $key=>$type) {
+			$this->data[$key] = isset($this->data[$key])? $this->data[$key]: '';
+			if (isset($data[$key])) { $this->data[$key] = $data[$key]; }
+			if ($key==$this->pk) $this->pkid = $data[$key];
+		}
+	}
+
+	public function error($message=false)
+	{
+		if ($message) $this->error[] = $message;
+		return empty($this->error)? false: $this->error;
+	}
+
+	public function validate($data)
+	{
+		// 
+	}
+
+	public function save($data)
+	{
+		$this->loadData($data);
+		if ($this->pkid) return $this->update($data);
+		return $this->insert($data);
+	}
+
+	public function insert($data)
+	{
+		global $wpdb;
+		$this->loadData($data);
+		$this->validate($data);
+		if ($this->error()) return false;
+		$sql = "INSERT INTO {table} SET " . implode(', ', array_map(function($key, $val) {
+			return "`{$key}`='{$val}'";
+		}, array_keys($data), $data));
+		return $this->query($sql);
+	}
+
+	public function update($data)
+	{
+		global $wpdb;
+		$this->loadData($data);
+		$this->validate($data);
+		if ($this->error()) return false;
+		unset($data[$this->pk]);
+		$sql = "UPDATE {table} SET ". implode(', ', array_map(function($key, $val) {
+			return "`{$key}`='{$val}'";
+		}, array_keys($data), $data)) ." WHERE `{$this->pk}`='{$this->pkid}' ";
+		return $this->query($sql);
+	}
+
+
+	public function delete($where)
+	{
+		if (is_array($where)) $where = "`{$this->pk}` IN(". implode(', ', $where) .")";
+		else if (is_numeric($where)) $where = "`{$this->pk}`='{$where}'";
+		dd("DELETE FROM {table} where {$where} ");
+		return $this->query("DELETE FROM {table} WHERE {$where} ");
+	}
+
+	public function row($sql)
+	{
+		$data = $this->query($sql);
+		return isset($data[0])? $data[0]: array();
+	}
+
+	public function all($sql)
+	{
+		return $this->query($sql);
+	}
+
+	public function paginate($sql, $params=false)
+	{
+		if (is_string($params)) parse_str($params, $params);
+		$params = is_array($params)? $params: array();
+		$params = array_merge(array(
+			'page' => 1,
+			'perpage' => 10,
+		), $params);
+		$data = $this->query($sql);
+
+		$params['total'] = sizeof($data);
+		$params['pages'] = ceil($params['total']/$params['perpage']);
+		$params['data'] = array_slice($data, (($params['page']-1) * $params['perpage']), $params['perpage']);
+
+		return $params;
+	}
+
+	public function query($sql)
+	{
+		global $wpdb;
+		$sql = str_replace('{table}', "`{$this->table}`", $sql);
+		$return = $wpdb->get_results($sql);
+		
+		if (is_array($wpdb->dbh->error_list) AND !empty($wpdb->dbh->error_list)) {
+			foreach($wpdb->dbh->error_list as $err) {
+				if ($err['errno']=='1146') {
+					$sqlc = "CREATE TABLE `{$this->table}` (";
+					foreach($this->fields as $key=>$type) {
+						if ($type=='pk') $type = 'int NOT NULL AUTO_INCREMENT';
+						$sqlc .= "\n\t`{$key}` {$type},";
+					}
+					$sqlc .= "\n\tPRIMARY KEY ({$this->pk})\n);";
+					$wpdb->query($sqlc);
+				}
+			}
+			$return = $wpdb->get_results($sql);
+		}
+
+		return $return;
+	}
+}
+
+
 class Wpska_Posts
 {
 	
