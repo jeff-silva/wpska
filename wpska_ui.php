@@ -382,10 +382,10 @@ class Wpska_Ui
 				_addressSearch: function() {
 					var app=this, $=jQuery, $parent=$("#<?php echo $params['id']; ?>");
 					$parent.css({opacity:.5});
-					var post = {"wpska":"wpska_ui_address_search", "search":app.value.zipcode};
-					$.post("<?php echo site_url('/'); ?>", post, function(resp) {
+					var post = {"search":app.value.zipcode};
+					$.post("<?php echo site_url('/wp-json/wpska/v1/address_search'); ?>", post, function(resp) {
 						$parent.css({opacity:1});
-						Vue.set(app, "value", resp.success);
+						Vue.set(app, "value", resp);
 					}, "json");
 				},
 			},
@@ -703,86 +703,6 @@ class Wpska_Ui_Ajax extends Wpska_Ajax
 	}
 
 
-	public function wpska_ui_address_search()
-	{
-		if (! function_exists('google_places_search')) {
-			function google_places_search($path=null) {
-				$parse = parse_url($path);
-				$parse = array_merge(array('path'=>null, 'query'=>null), $parse);
-				parse_str($parse['query'], $parse['query']);
-				$parse['query'] = is_array($parse['query'])? $parse['query']: array();
-				$parse['query']['key'] = 'AIzaSyB-Li2nMHdkyiJVLubSOtxZZEqGkmxRpvs';
-				$parse['query']['language'] = 'pt-BR';
-				$parse['query'] = http_build_query($parse['query']);
-				$path = trim("{$parse['path']}?{$parse['query']}", '/');
-				$data = wpska_content($url = "https://maps.googleapis.com/maps/api/place/{$path}");
-				$data = json_decode($data, true);
-				$data['url'] = $url;
-				return $data;
-			}
-		}
-
-		$return = false;
-
-		if ($search = $this->param('search')) {
-			$search = str_replace(' ', '%20', $search);
-			$return = array(
-				'zipcode' => '',
-				'route' => '',
-				'number' => '',
-				'complement' => '',
-				'district' => '',
-				'city' => '',
-				'state' => '',
-				'state_short' => '',
-				'country' => '',
-				'country_short' => '',
-				'lat' => '',
-				'lng' => '',
-			);
-
-			$resp1 = wpska_content("https://viacep.com.br/ws/{$search}/json/");
-			$resp1 = json_decode($resp1, true);
-			if (is_array($resp1) AND isset($resp1['logradouro'])) {
-				$search = "{$search}+{$resp1['logradouro']}+{$resp1['bairro']}+{$resp1['localidade']}";
-				$return['zipcode'] = $resp1['cep'];
-				$return['route'] = $resp1['logradouro'];
-				$return['district'] = $resp1['bairro'];
-				$return['city'] = $resp1['localidade'];
-				$return['state'] = $resp1['uf'];
-				$return['state_short'] = $resp1['uf'];
-			}
-
-			$resp2 = google_places_search("/textsearch/json?query={$search}");
-			if (isset($resp2['results'][0]['place_id'])) {
-				$resp2 = google_places_search("/details/json?placeid={$resp2['results'][0]['place_id']}");
-				if (isset($resp2['result']['address_components'])) {
-					foreach($resp2['result']['address_components'] as $comp) {
-						if ($comp['types'][0]=='route') $return['route']=$comp['long_name'];
-						else if ($comp['types'][0]=='street_number') $return['number']=$comp['long_name'];
-						else if ($comp['types'][0]=='postal_code') $return['zipcode']=$comp['long_name'];
-						else if ($comp['types'][0]=='sublocality_level_1') $return['district']=$comp['long_name'];
-						else if ($comp['types'][0]=='administrative_area_level_2') $return['city']=$comp['long_name'];
-						else if ($comp['types'][0]=='administrative_area_level_1') {
-							$return['state']=$comp['long_name'];
-							$return['state_short']=$comp['short_name'];
-						}
-						else if ($comp['types'][0]=='country') {
-							$return['country']=$comp['long_name'];
-							$return['country_short']=$comp['short_name'];
-						}
-					}
-					$return['lat'] = $resp2['result']['geometry']['location']['lat'];
-					$return['lng'] = $resp2['result']['geometry']['location']['lng'];
-					$return['formatted_address'] = $resp2['result']['formatted_address'];
-				}
-			}
-		}
-
-		return $return;
-	}
-
-
 	public function wpska_ui_posts_search()
 	{
 		$value = isset($_REQUEST['value'])? $_REQUEST['value']: array();
@@ -803,5 +723,90 @@ class Wpska_Ui_Ajax extends Wpska_Ajax
 }
 
 
+class Wpska_Ui_Api extends Wpska_Api
+{
+	public function address_search()
+	{
+		$return = array(
+			'zipcode' => '',
+			'route' => '',
+			'number' => '',
+			'complement' => '',
+			'district' => '',
+			'city' => '',
+			'state' => '',
+			'state_short' => '',
+			'country' => '',
+			'country_short' => '',
+			'lat' => '',
+			'lng' => '',
+		);
+
+		$search = isset($_REQUEST['search'])? $_REQUEST['search']: false;
+		if (! $search) return $return;
+
+		$search = str_replace(' ', '%20', $search);
+
+		if (! function_exists('google_places_search')) {
+			function google_places_search($path=null) {
+				$parse = parse_url($path);
+				$parse = array_merge(array('path'=>null, 'query'=>null), $parse);
+				parse_str($parse['query'], $parse['query']);
+				$parse['query'] = is_array($parse['query'])? $parse['query']: array();
+				$parse['query']['key'] = 'AIzaSyB-Li2nMHdkyiJVLubSOtxZZEqGkmxRpvs';
+				$parse['query']['language'] = 'pt-BR';
+				$parse['query'] = http_build_query($parse['query']);
+				$path = trim("{$parse['path']}?{$parse['query']}", '/');
+				$data = wpska_content($url = "https://maps.googleapis.com/maps/api/place/{$path}");
+				$data = json_decode($data, true);
+				$data['url'] = $url;
+				return $data;
+			}
+		}
+		
+
+		$resp1 = wpska_content("https://viacep.com.br/ws/{$search}/json/");
+		$resp1 = json_decode($resp1, true);
+		if (is_array($resp1) AND isset($resp1['logradouro'])) {
+			$search = "{$search}+{$resp1['logradouro']}+{$resp1['bairro']}+{$resp1['localidade']}";
+			$return['zipcode'] = $resp1['cep'];
+			$return['route'] = $resp1['logradouro'];
+			$return['district'] = $resp1['bairro'];
+			$return['city'] = $resp1['localidade'];
+			$return['state'] = $resp1['uf'];
+			$return['state_short'] = $resp1['uf'];
+		}
+
+		$resp2 = google_places_search("/textsearch/json?query={$search}");
+		if (isset($resp2['results'][0]['place_id'])) {
+			$resp2 = google_places_search("/details/json?placeid={$resp2['results'][0]['place_id']}");
+			if (isset($resp2['result']['address_components'])) {
+				foreach($resp2['result']['address_components'] as $comp) {
+					if ($comp['types'][0]=='route') $return['route']=$comp['long_name'];
+					else if ($comp['types'][0]=='street_number') $return['number']=$comp['long_name'];
+					else if ($comp['types'][0]=='postal_code') $return['zipcode']=$comp['long_name'];
+					else if ($comp['types'][0]=='sublocality_level_1') $return['district']=$comp['long_name'];
+					else if ($comp['types'][0]=='administrative_area_level_2') $return['city']=$comp['long_name'];
+					else if ($comp['types'][0]=='administrative_area_level_1') {
+						$return['state']=$comp['long_name'];
+						$return['state_short']=$comp['short_name'];
+					}
+					else if ($comp['types'][0]=='country') {
+						$return['country']=$comp['long_name'];
+						$return['country_short']=$comp['short_name'];
+					}
+				}
+				$return['lat'] = $resp2['result']['geometry']['location']['lat'];
+				$return['lng'] = $resp2['result']['geometry']['location']['lng'];
+				$return['formatted_address'] = $resp2['result']['formatted_address'];
+			}
+		}
+
+		return $return;
+	}
+}
+
+
 new Wpska_Ui_Actions();
 new Wpska_Ui_Ajax();
+new Wpska_Ui_Api();

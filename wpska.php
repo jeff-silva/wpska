@@ -132,6 +132,7 @@ class Wpska_Ajax
 
 
 
+// echo site_url('/wp-json/wpska/v1/method');
 class Wpska_Api
 {
 	public function __construct()
@@ -146,7 +147,7 @@ class Wpska_Api
 					'namespace' => 'wpska/v1',
 					'route' => $method,
 					'params' => array(
-						'methods' => 'GET',
+						'methods' => 'GET,POST',
 						'callback' => null,
 					),
 				), $params);
