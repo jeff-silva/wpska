@@ -40,66 +40,122 @@ class Tab
 
 
 
+Tab::add('Form', function() {
 
-Tab::add('Vue', function() { ?>
-<div data-vue="vueInit">
-	<div class="text-right">
-		<button class="btn btn-default" @click="_todoAdd();">_todoAdd();</button>
+$checks = array(
+	'wpska-radio',
+	'wpska-radio-o',
+	'wpska-check',
+	'wpska-check-o',
+);
+
+?>
+<div class="panel panel-default">
+	<div class="panel-heading">Checks</div>
+	<div class="panel-body">
+		<div class="row">
+			<?php foreach($checks as $check): ?>
+			<div class="col-xs-6 col-sm-3">
+				<label>
+					<input type="checkbox" class="<?php echo $check; ?>">
+					<span class="<?php echo $check; ?>"></span>
+					<?php echo $check; ?> 
+				</label>
+			</div>
+			<?php endforeach; ?>
+		</div>
 	</div>
-	<br>
+</div>
+
+<div class="panel panel-default">
+	<div class="panel-heading">Masks</div>
+	<div class="panel-body">
+		<div class="row">
+			<div class="form-group col-xs-6">
+				<label>CPF</label>
+				<input type="text" class="form-control" data-mask="999.999.999-99">
+			</div>
+
+			<div class="form-group col-xs-6">
+				<label>Phone</label>
+				<input type="text" class="form-control" data-mask="(99) 99999-9999">
+			</div>
+		</div>
+	</div>
+</div>
+<?php });
+
+
+
+Tab::add('Vue2', function() { ?>
+<div id="app-vue2">
+	<button class="btn btn-default" @click="_itemAdd();">_itemAdd</button>
+	<br><br>
+
 	<div class="row">
-		<draggable :list="todos" :options="{handle:'._handle', animation:150}">
-			<div class="col-xs-3 todos-each" v-for="todo in todos">
-				<div class="panel panel-default">
-					<div class="panel-heading _handle">
-						<div class="pull-right">
-							<a href="javascript:;" class="fa fa-fw fa-remove" @click="_remove(false, 'todos', todo);"></a>
-						</div>
-						<strong>{{ todo.title }}</strong>
+		<div class="col-xs-6">
+			<div class="panel panel-default">
+				<div class="panel-heading">Items</div>
+				<div class="panel-body">
+					<div class="row">
+						<draggable :list="items" :options="{animation:150}">
+							<div class="col-xs-4" v-for="item in items">
+								<div style="padding:5px;" :class="{'bg-primary':_exists(selecteds, item)}">
+									<div class="text-right">
+										<a href="javascript:;" class="fa fa-fw fa-remove" @click="_remove(false, 'items', item, null, '.col-xs-3');"></a>
+									</div>
+									<div class="wpska-cover" style="width:100%; height:100px;" @click="_toggle(false, 'selecteds', item);">
+										<img :src="item.thumb" alt="">
+									</div>
+								</div><br>
+							</div>
+						</draggable>
 					</div>
-					<div class="panel-body">
-						<div class="form-group">
-							<label>Title</label>
-							<input type="text" v-model="todo.title" class="form-control">
-						</div>
-						
-						<div class="form-group">
-							<label>Title</label>
-							<textarea v-model="todo.description" class="form-control"></textarea>
+				</div>
+			</div>
+		</div>
+		<div class="col-xs-6">
+			<div class="panel panel-default">
+				<div class="panel-heading">Selecteds</div>
+				<div class="panel-body">
+					<div class="list-grou">
+						<div class="list-group-item" v-for="item in selecteds">
+							<div class="wpska-cover" style="width:37px; height:37px; float:left; margin-right:5px;">
+								<img :src="item.thumb" alt="">
+							</div>
+							<div style="float:left;">
+								#{{ item._id }}
+								<div v-if="!_exists(items, item)"><small class="text-muted">Removido</small></div>
+							</div>
+							<div class="clearfix"></div>
 						</div>
 					</div>
 				</div>
 			</div>
-		</draggable>
-
-		<div class="col-xs-12 jumbotron text-center" v-if="!todos.length">
-			<small class="text-muted">Nenhum ítem</small>
 		</div>
 	</div>
-	<pre>{{ $data }}</pre>
 </div>
 
 <script>
-function vueInit() {
-	return {
-		data: {
-			todos: [],
+new Vue2({
+	el: "#app-vue2",
+	data: {
+		items: [],
+		selecteds: [],
+	},
+	methods: {
+		_item: function(item) {
+			return this._default(item, {
+				name: "Item #{id}",
+				thumb: ("https://picsum.photos/200/200?rand="+Math.round(Math.random()*999)),
+			});
 		},
-		methods: {
-			_todoAdd: function(todo) {
-				todo = this._todo(todo);
-				this._add(this, 'todos', todo);
-			},
-			_todo: function(todo) {
-				return this._default(todo, {
-					title: "#{$id}",
-					description: "",
-					status: "ok",
-				});
-			},
+		_itemAdd: function(item) {
+			item = this._item(item);
+			return this._prepend(this, "items", item);
 		},
-	};
-}
+	},
+});
 </script>
 <?php });
 
