@@ -179,7 +179,8 @@ jQuery.fn.wpskaParams = function(attr, defs) {
 	return params;
 };
 
-jQuery(document).ready(function($) {
+window.wpskaInit = function() {
+	var $=jQuery;
 	$.wpskaLoad([
 		"https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js",
 		"https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css",
@@ -201,4 +202,5 @@ jQuery(document).ready(function($) {
 		$("body").addClass("wpska-loading");
 		$(".wpska-loading").not("body").fadeIn(200);
 	});
-});
+};
+jQuery(document).ready(window.wpskaInit);
