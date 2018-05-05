@@ -11,6 +11,13 @@ else if (isset($_GET['wpska_js'])): header('Content-Type: application/javascript
 <?php die; endif;*/
 
 
+if (! defined('WPSKA')) {
+	define('WPSKA', __FILE__);
+}
+else {
+	return null;
+}
+
 
 if (! function_exists('dd')) {
 	function dd() {
