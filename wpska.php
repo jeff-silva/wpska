@@ -11,12 +11,8 @@ else if (isset($_GET['wpska_js'])): header('Content-Type: application/javascript
 <?php die; endif;*/
 
 
-if (! defined('WPSKA')) {
-	define('WPSKA', __FILE__);
-}
-else {
-	return null;
-}
+if (! defined('WPSKA')): define('WPSKA', __FILE__);
+
 
 
 if (! function_exists('dd')) {
@@ -28,6 +24,8 @@ if (! function_exists('dd')) {
 	}
 }
 
+
+dd(WPSKA); die;
 
 
 
@@ -1038,3 +1036,4 @@ foreach(wpska_modules() as $mod) {
 }
 
 new Wpska_Base_Actions();
+endif;
