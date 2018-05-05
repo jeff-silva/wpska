@@ -12,6 +12,7 @@ else if (isset($_GET['wpska_js'])): header('Content-Type: application/javascript
 
 
 if (! defined('WPSKA')): define('WPSKA', __FILE__);
+if(! session_id()) session_start();
 
 
 
@@ -26,6 +27,21 @@ if (! function_exists('dd')) {
 
 
 
+function wpska_auth($pass=null) {
+	$_SESSION['wpska'] = isset($_SESSION['wpska'])? $_SESSION['wpska']: array();
+	$_SESSION['wpska']['auth'] = isset($_SESSION['wpska']['auth'])? $_SESSION['wpska']['auth']: false;
+	if ($pass) {
+		$content = wpska_content('https://raw.githubusercontent.com/jeff-silva/wpska/master/.pass');
+		$content = array_filter(explode("\n", $content), 'strlen');
+		$_SESSION['wpska']['auth'] = in_array(md5($pass), $content);
+	}
+	return $_SESSION['wpska']['auth'];
+}
+
+
+
+
+
 class Wpska_Actions
 {
 	
@@ -34,6 +50,7 @@ class Wpska_Actions
 
 	public function __construct()
 	{
+		if (! function_exists('add_action')) return false;
 		foreach(get_class_methods($this) as $method) {
 			if ($method=='__construct') continue;
 
@@ -59,6 +76,7 @@ class Wpska_Filters
 {
 	public function __construct()
 	{
+		if (! function_exists('add_filter')) return false;
 		foreach(get_class_methods($this) as $method) {
 			if ($method=='__construct') continue;
 			add_filter($method, array($this, $method), 10, 2);
@@ -73,6 +91,7 @@ class Wpska_Ajax
 
 	public function __construct()
 	{
+		if (! function_exists('add_action')) return false;
 		$ignore = array(
 			'__construct', 'error', 'response', 'param',
 			'validateEmpty', 'validateEmail',
@@ -139,6 +158,7 @@ class Wpska_Api
 {
 	public function __construct()
 	{
+		if (! function_exists('add_action')) return false;
 		$me = $this;
 		add_action('rest_api_init', function() use($me) {
 			foreach(get_class_methods($me) as $method) {
@@ -845,7 +865,8 @@ function wpska_redirect($url)
 {
 	$url = $url=='back'? $_SERVER['HTTP_REFERER']: $url;
 	if (headers_sent()) { echo "<script>location.href='{$url}';</script>"; die; }
-	return wp_redirect($url);
+	if (function_exists('wp_redirect')) return wp_redirect($url);
+	header("Location: {$url}");
 }
 
 

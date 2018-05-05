@@ -178,13 +178,15 @@ function wpska_newsletter($form_id, $content=null, $attrs=null) {
 
 
 
-add_action('load-edit.php', function() { ?>
-<?php if (isset($_GET['post_type']) AND $_GET['post_type']=='wpska_form'): ?>
-<style>
-.post-state, #filter-by-date, #post-query-submit {display:none;}
-</style>
-<?php endif; ?>
-<?php });
+if (function_exists('add_action')) {
+	add_action('load-edit.php', function() { ?>
+	<?php if (isset($_GET['post_type']) AND $_GET['post_type']=='wpska_form'): ?>
+	<style>
+	.post-state, #filter-by-date, #post-query-submit {display:none;}
+	</style>
+	<?php endif; ?>
+	<?php });
+}
 
 
 
