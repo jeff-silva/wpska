@@ -25,9 +25,6 @@ if (! function_exists('dd')) {
 }
 
 
-dd(WPSKA); die;
-
-
 
 class Wpska_Actions
 {
