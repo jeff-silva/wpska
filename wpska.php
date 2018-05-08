@@ -485,6 +485,7 @@ function wpska_modules($keyname=null) {
 	$modules['wpska_posttypes'] = array('title'=>'Post types');
 	$modules['wpska_theme'] = array('title'=>'Customização de tema.');
 	$modules['wpska_maintenance'] = array('title'=>'Manutenção.');
+	$modules['wpska_elementor'] = array('title'=>'Elementor helpers.');
 
 	foreach($modules as $key=>$mod) {
 		$mod['id'] = $key;
