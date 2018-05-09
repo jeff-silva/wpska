@@ -465,10 +465,15 @@ class Wpska_Post
 
 
 
-function wpska_header() {
+function wpska_header($local=false) {
 	global $wpska_header_loaded;
 	if ($wpska_header_loaded) return null;
-	echo '<script src="https://wpska.herokuapp.com/wpska.js"></script>';
+	$url = 'https://wpska.herokuapp.com/wpska.js';
+	if ($local) {
+		$url = realpath(__DIR__) . '/wpska.js';
+		$url = str_replace(realpath($_SERVER['DOCUMENT_ROOT']), "//{$_SERVER['HTTP_HOST']}", $url);
+	}
+	echo "<script src='{$url}'></script>";
 	$wpska_header_loaded=true;
 }
 
