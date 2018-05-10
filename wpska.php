@@ -369,6 +369,24 @@ class Wpska_Posts
 
 
 
+	public function taxonomies($taxonomies, $args=array())
+	{
+		$return = array();
+		$taxonomies = is_array($taxonomies)? $taxonomies: array($taxonomies);
+		foreach($taxonomies as $taxonomy) {
+			foreach($this->posts as $post) {
+				$post->tags = array();
+				foreach(wp_get_post_terms($post->ID, $taxonomy, $args) as $term) {
+					$return[ $term->term_id ] = $term;
+					$post->tags[ $term->term_id ] = $term;
+				}
+			}
+		}
+		return $return;
+	}
+
+
+
 	public function content($callback)
 	{
 		global $post;
