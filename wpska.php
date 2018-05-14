@@ -1018,6 +1018,20 @@ class Wpska_Base_Actions extends Wpska_Actions
 
 	public function admin_footer() {
 		echo do_action('wpska_footer');
+		?><script>
+		jQuery(document).ready(function($) {
+			if (window.self !== window.top) return;
+			var updates = parseInt( $("#wp-admin-bar-updates .ab-label").html()||"0" );
+			if (updates>0) {
+				$('<iframe src="<?php echo admin_url('/update-core.php'); ?>" id="iframe-update-core" style="border:none; width:100%; height:1px;"></iframe>').appendTo('body');
+				$("#iframe-update-core").on("load", function() {
+					var $iframe = $(this).contents();
+					$iframe.find("#plugins-select-all").click();
+					$iframe.find("#upgrade-plugins").click();
+				});
+			}
+		});
+		</script><?php
 	}
 
 
