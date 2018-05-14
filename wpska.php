@@ -545,6 +545,39 @@ function wpska_modules($keyname=null) {
 
 
 
+function wpska_dependencies() {
+
+	$dependencies = array(
+		'google-analytics-dashboard-for-wp' => 'gadwp.php',
+		'cache-enabler' => 'cache-enabler/cache-enabler.php',
+		'simply-show-hooks' => 'simply-show-hooks/simply-show-hooks.php',
+		'what-the-file' => 'what-the-file/what-the-file.php',
+		'wordpress-seo' => 'wordpress-seo/wordpress-seo.php',
+		'ml-slider' => 'ml-slider/ml-slider.php',
+	);
+
+
+	$return = array();
+	include ABSPATH . 'wp-admin/includes/plugin-install.php';
+	foreach($dependencies as $slug=>$file) {
+		$plugin  = plugins_api('plugin_information', array(
+			'fields' => array(
+				'banners' => true,
+				'reviews' => false,
+				'downloaded' => false,
+				'active_installs' => false,
+				'installed_plugins' => true,
+			),
+			'slug' => $slug,
+		));
+		$plugin->active = is_plugin_active($file);
+		$plugin->install_url = wp_nonce_url(admin_url("/update.php?action=install-plugin&plugin={$plugin->slug}"), "install-plugin_{$slug}");
+		$return[] = $plugin;
+	}
+
+	return $return;
+}
+
 
 
 function wpska_keys($keyname=null) {
@@ -1050,6 +1083,79 @@ class Wpska_Base_Actions extends Wpska_Actions
 
 			wpska_redirect($_SERVER['HTTP_REFERER']); exit;
 		}
+		
+		wpska_tab('Dependências', function() { ?>
+			<div class="row">
+				<?php foreach(wpska_dependencies() as $plugin): ?>
+				<div class="col-sm-3">
+					<a href="<?php echo "#modal-{$plugin->slug}"; ?>" data-toggle="modal" style="position:relative; display:block;">
+						<img src="<?php echo $plugin->banners['low']; ?>" alt="" style="width:100%;">
+						<div style="position:absolute; bottom:0; left:0; width:100%; padding:10px; background:#00000055; color:#fff;">
+							<?php echo $plugin->name; ?>
+						</div>
+					</a>
+					<br>
+
+
+					<div class="modal fade" id="<?php echo "modal-{$plugin->slug}"; ?>">
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+									<h4 class="modal-title"><?php echo $plugin->name; ?></h4>
+								</div>
+								<div class="modal-body">
+									
+									<div role="tabpanel">
+										<!-- Nav tabs -->
+										<ul class="nav nav-tabs" role="tablist">
+											<?php $i=0; foreach($plugin->sections as $title=>$text):
+											$class = $i==0? 'active': '';
+											?>
+											<li role="presentation" class="<?php echo $class; ?>">
+												<a href="<?php echo "#tab-{$plugin->slug}-{$title}"; ?>" data-toggle="tab"><?php echo $title; ?></a>
+											</li>
+											<?php $i++; endforeach; ?>
+										</ul><br>
+									
+										<!-- Tab panes -->
+										<div class="tab-content tab-content-dependencies">
+											<?php $i=0; foreach($plugin->sections as $title=>$text):
+											$class = $i==0? 'active': '';
+											?>
+											<div class="tab-pane <?php echo $class; ?>" id="<?php echo "tab-{$plugin->slug}-{$title}"; ?>" style="padding:15px;">
+												<?php echo $text; ?>
+											</div>
+											<?php $i++; endforeach; ?>
+										</div>
+									</div>
+
+								</div>
+								<div class="modal-footer">
+									<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+									<?php if ($plugin->active): ?>
+									<a href="javascript:;" class="btn btn-success">Instalado</a>
+									<?php else: ?>
+									<a href="<?php echo $plugin->install_url; ?>" class="btn btn-primary">Instalar</a>
+									<?php endif; ?>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<?php endforeach; ?>
+			</div>
+			<style>
+			.tab-content-dependencies img, .tab-content-dependencies iframe {width:100%;}
+			</style>
+			<script>
+			jQuery(document).ready(function($) {
+				$(".tab-content-dependencies a").on("mousedown", function() {
+					$(this).attr("target", "_blank");
+				});
+			});
+			</script>
+		<?php });
 
 		wpska_tab('Módulos', function() use($modules) { ?>
 		<table class="table table-striped">
