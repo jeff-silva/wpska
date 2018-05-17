@@ -12,7 +12,7 @@ else if (isset($_GET['wpska_js'])): header('Content-Type: application/javascript
 
 
 if (! defined('WPSKA')): define('WPSKA', __FILE__);
-if(! session_id()) session_start();
+if(! session_id() AND realpath(session_save_path())) session_start();
 
 
 
