@@ -1056,11 +1056,34 @@ class Wpska_Base_Actions extends Wpska_Actions
 			if (window.self !== window.top) return;
 			var updates = parseInt( $("#wp-admin-bar-updates .ab-label").html()||"0" );
 			if (updates>0) {
-				$('<iframe src="<?php echo admin_url('/update-core.php'); ?>" id="iframe-update-core" style="border:none; width:100%; height:1px;"></iframe>').appendTo('body');
+
+				$("#wpbody").prepend('<div id="flash-wp-update" style="background:#ddd; padding:15px;"><strong>Atenção:</strong> Seu painel Wordpress está passando por uma atualização. Por favor, não feche esta aba até que esta mensagem seja atualizada.</div>');
+				var $flash = $("#flash-wp-update");
+
+				$('<iframe src="<?php echo admin_url('/update-core.php'); ?>" id="iframe-udate-core" style="border:none; width:100%; height:1px;"></iframe>').appendTo('body');
 				$("#iframe-update-core").on("load", function() {
 					var $iframe = $(this).contents();
-					$iframe.find("#plugins-select-all").click();
-					$iframe.find("#upgrade-plugins").click();
+
+					if ($iframe.find("#plugins-select-all").length) {
+						$flash.append('<div>- Atualizando plugins</div>');
+						// $iframe.find("#plugins-select-all").click();
+						// $iframe.find("#upgrade-plugins").click();
+					}
+
+					else if ($iframe.find("#themes-select-all").length) {
+						$flash.append('<div>- Atualizando temas</div>');
+						$iframe.find("#themes-select-all").click();
+						$iframe.find("#upgrade-themes").click();
+					}
+
+					else if ($iframe.find("#upgrade").length) {
+						$flash.append('<div>- Atualizando Wordpress</div>');
+						$iframe.find("#upgrade").click();
+					}
+
+					else {
+						$flash.append('<div>- Atualizações concluídas</div>');
+					}
 				});
 			}
 		});
