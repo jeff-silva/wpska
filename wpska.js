@@ -202,5 +202,8 @@ window.wpskaInit = function() {
 		$("body").addClass("wpska-loading");
 		$(".wpska-loading").not("body").fadeIn(200);
 	});
+	
+	window.wpska=window.wpska||[];
+	for(var i in window.wpska) window.wpska[i].call(window);
 };
 jQuery(document).ready(window.wpskaInit);
