@@ -18,10 +18,13 @@ if(! session_id() AND realpath(session_save_path())) session_start();
 
 if (! function_exists('dd')) {
 	function dd() {
-		foreach(func_get_args() as $data) {
-			echo '<pre style="font:11px monospace; border:solid 1px #ddd; background:#eee; padding:5px;">',
-			print_r($data, true), '&nbsp;</pre>';
+		$prints = array();
+		foreach(func_get_args() as $i=>$data) {
+			$color = $i%2==0? '#fff': '#eee';
+			$prints[] = "<div style='padding:10px; background:{$color}'>". print_r($data, true) .'</div>';
 		}
+		$prints = implode('', $prints);
+		echo "<pre style='font:11px monospace; border:solid 1px #eee;'>{$prints}</pre>";
 	}
 }
 
