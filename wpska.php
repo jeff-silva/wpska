@@ -41,6 +41,7 @@ class Wpska_Db
 		'title' => 'varchar(255)',
 	);
 	public $error = array();
+	public $sqls = array();
 
 	public function __construct()
 	{
@@ -64,6 +65,14 @@ class Wpska_Db
 		}
 	}
 
+	public function info()
+	{
+		global $wpdb;
+		$return['dbh'] = $wpdb->dbh;
+		$return['sqls'] = $this->sqls;
+		return $return;
+	}
+
 	public function fix($method, $params=array())
 	{
 		global $wpdb;
@@ -74,6 +83,7 @@ class Wpska_Db
 					$sql .= "{$key} {$val},";
 				}
 				$sql .= "PRIMARY KEY ({$this->pk}));";
+				$this->sqls[] = $sql;
 				$wpdb->query($sql);
 				$this->onTableCreate();
 				return call_user_func_array(array($this, $method), $params);
@@ -84,7 +94,9 @@ class Wpska_Db
 				$fields = $this->fields('{table}');
 				foreach($this->fields as $key=>$val) {
 					if (!isset($fields[$key])) {
-						$wpdb->query("ALTER TABLE `{$this->table}` ADD {$key} {$val};");
+						$sql = "ALTER TABLE `{$this->table}` ADD {$key} {$val};";
+						$this->sqls[] = $sql;
+						$wpdb->query($sql);
 						return call_user_func_array(array($this, $method), $params);
 					}
 				}
@@ -107,6 +119,7 @@ class Wpska_Db
 	public function tables()
 	{
 		global $wpdb;
+		$this->sqls[] = "show tables";
 		foreach($wpdb->get_results("show tables") as $table) {
 			$table = get_object_vars($table);
 			$table = array_values($table);
@@ -121,6 +134,7 @@ class Wpska_Db
 		global $wpdb;
 		$sql = "show fields from {$table}";
 		$sql = str_replace('{table}', "`{$this->table}`", $sql);
+		$this->sqls[] = $sql;
 		foreach($wpdb->get_results($sql) as $field) {
 			$return[$field->Field] = $field;
 		}
@@ -155,6 +169,7 @@ class Wpska_Db
 			"INSERT INTO `{$this->table}` SET {$sql}";
 
 		$result = $wpdb->query($sql);
+		$this->sqls[] = $sql;
 		$this->fix(__FUNCTION__, func_get_args());
 		return $result;
 	}
@@ -165,6 +180,8 @@ class Wpska_Db
 		global $wpdb;
 		$sql = str_replace('{table}', "`{$this->table}`", $sql);
 		$all = $wpdb->get_results($sql);
+		$all = array_map(array($this, 'onSelect'), $all);
+		$this->sqls[] = $sql;
 		return $all;
 	}
 
@@ -179,23 +196,28 @@ class Wpska_Db
 	public function paginate($sql, $params=array())
 	{
 		$params = array_merge(array(
-			'page' => 1,
+			'p' => 1,
 			'perpage' => 20,
-			'link' => '?page=%s',
+			'link' => false,
 		), $params);
 
 		$all = $this->all($sql);
 		$results = count($all);
 		$pages = ceil($results / $params['perpage']);
-		$params['page'] = max($params['page'], 1);
-		$params['page'] = min($params['page'], $pages);
-		$offset = ($params['page'] - 1) * $params['perpage'];
+		$params['p'] = max($params['p'], 1);
+		$params['p'] = min($params['p'], $pages);
+		$offset = ($params['p'] - 1) * $params['perpage'];
 		if( $offset < 0 ) $offset = 0;
 
 		$data = array_slice($all, $offset, $params['perpage']);
 
 		$links = array();
 		for($p=1; $p<=$pages; $p++) {
+			if (! $params['link']) {
+				$params['link'] = $_GET;
+				$params['link']['p'] = $p;
+				$params['link'] = '?' . http_build_query($params['link']);
+			}
 			$links[] = sprintf($params['link'], $p);
 		}
 
@@ -209,8 +231,9 @@ class Wpska_Db
 		);
 	}
 
-	public function onTableCreate() {}
 	public function validate($data) {}
+	public function onTableCreate() {}
+	public function onSelect($row) { return $row; }
 }
 
 
