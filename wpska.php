@@ -1,19 +1,7 @@
 <?php
 
-/* TODO:
-- Inserir opção de limpar caches específicos;
-*/
-
-/*if (isset($_GET['wpska_js'])): header('Content-Type: application/javascript'); ?>
-<?php die; endif;
-
-else if (isset($_GET['wpska_js'])): header('Content-Type: application/javascript'); ?>
-<?php die; endif;*/
-
-
 if (! defined('WPSKA')): define('WPSKA', __FILE__);
 if(! session_id() AND realpath(session_save_path())) session_start();
-
 
 
 if (! function_exists('dd')) {
@@ -42,6 +30,110 @@ function wpska_auth($pass=null) {
 }
 
 
+
+
+class Wpska_Db
+{
+	public $table;
+	public $pk;
+	public $fields = array(
+		'id' => 'pk',
+		'title' => 'varchar(255)',
+	);
+
+	public function __construct()
+	{
+		global $wpdb;
+
+		$this->table = $this->table? $this->table: strtolower(preg_replace('/[^a-zA-Z0-9_]/', '_', get_class($this)));
+
+		if ($wpdb) {
+			$this->table = "{$wpdb->prefix}{$this->table}";
+		}
+
+		if (! $this->pk) {
+			$fields = array_keys($this->fields);
+			$this->pk = $fields[0];
+		}
+	}
+
+	public function fix($method, $params=array())
+	{
+		global $wpdb;
+		foreach($wpdb->dbh->error_list as $error) {
+			if ($error['errno']=='1146') {
+				$sql = "CREATE TABLE `{$this->table}` (";
+				foreach($this->fields as $key=>$val) {
+					$sql .= "{$key} {$val},";
+				}
+				$sql .= "PRIMARY KEY ({$this->pk}));";
+				$wpdb->query($sql);
+				$this->onTableCreate();
+				return call_user_func_array(array($this, $method), $params);
+			}
+		}
+	}
+
+	public function save($data)
+	{
+		global $wpdb;
+
+		foreach($data as $key=>$val) {
+			if (!isset($this->fields[$key])) {
+				unset($data[$key]);
+			}
+		}
+
+		$sql = array_map(function($key, $val) { return "`{$key}`='{$val}'"; }, array_keys($data), $data);
+		$sql = implode(', ', $sql);
+
+		$sql = (isset($data[$this->pk]) AND !empty($data[$this->pk]))?
+			"UPDATE `{$this->table}` SET {$sql} WHERE `{$this->pk}`='{$data[$this->pk]}' ":
+			"INSERT INTO `{$this->table}` SET {$sql}";
+
+		$result = $wpdb->query($sql);
+		$return = $this->fix(__FUNCTION__, func_get_args());
+		dd($data, $sql, $result, $return);
+	}
+
+	public function all($sql)
+	{
+		global $wpdb;
+		$sql = str_replace('{table}', "`{$this->table}`", $sql);
+		$all = $wpdb->get_results($sql);
+		return $all;
+	}
+
+	public function row($sql)
+	{
+		$all = $this->all($sql);
+		return isset($all[0])? $all[0]: array();
+	}
+
+	public function paginate($sql, $page=1, $perpage=20)
+	{
+		$all = $this->all($sql);
+		$results = count($all);
+		$pages = ceil($results / $perpage);
+		$page = max($page, 1);
+		$page = min($page, $pages);
+		$offset = ($page - 1) * $perpage;
+		if( $offset < 0 ) $offset = 0;
+
+		$data = array_slice($all, $offset, $perpage);
+
+		return array(
+			'pages' => $pages,
+			'results' => $results,
+			'page' => $page,
+			'perpage' => $perpage,
+			'data' => $all,
+			'links' => array(),
+		);
+	}
+
+	public function onTableCreate() {}
+}
 
 
 
