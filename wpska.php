@@ -695,7 +695,7 @@ function wpska_tab_render($settings=null) {
 	), $settings);
 
 	?>
-	<?php wpska_header(); ?>
+	<?php // wpska_header(); ?>
 
 	<?php if ($settings['link']): ?>
 	<?php $cdztab = isset($_GET['cdztab'])? $_GET['cdztab']: $tabs[ $settings['active'] ]['id']; ?>
@@ -1041,6 +1041,23 @@ class Wpska_Base_Actions extends Wpska_Actions
 				update_post_meta($post->ID, $key, $val);
 			}
 		}
+	}
+
+
+	public function enqueue_scripts()
+	{
+		wp_register_script('wpska-js', 'https://wpska.herokuapp.com/wpska.js', null, null, true);
+		wp_enqueue_script('wpska-js');
+	}
+	
+	public function wp_enqueue_scripts()
+	{
+		$this->enqueue_scripts();
+	}
+
+	public function admin_enqueue_scripts()
+	{
+		$this->enqueue_scripts();
 	}
 
 
