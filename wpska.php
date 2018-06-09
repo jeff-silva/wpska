@@ -1046,7 +1046,15 @@ class Wpska_Base_Actions extends Wpska_Actions
 
 	public function enqueue_scripts()
 	{
-		wp_register_script('wpska-js', 'https://wpska.herokuapp.com/wpska.js', null, null, true);
+		$test = false;
+		$script_url = 'https://wpska.herokuapp.com/wpska.js';
+
+		if ($test) {
+			$script_url = str_replace(realpath($_SERVER['DOCUMENT_ROOT']), realpath($_SERVER['HTTP_HOST']), realpath(__DIR__));
+			$script_url = $script_url  .'/wpska.js';
+		}
+
+		wp_register_script('wpska-js', $script_url, null, null, true);
 		wp_enqueue_script('wpska-js');
 	}
 	
