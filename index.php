@@ -121,33 +121,133 @@ Route::get('/login', function() { ?>
 
 
 Route::get('', function() {
-	Tab::add('Form', function() {
-
-	$checks = array(
-		'wpska-radio',
-		'wpska-radio-o',
-		'wpska-check',
-		'wpska-check-o',
-		'wpska-check-toggle',
-	);
-
-	?>
+	Tab::add('Form', function() { ?>
 	<div class="panel panel-default">
 		<div class="panel-heading">Checks</div>
 		<div class="panel-body">
 			<div class="row">
-				<?php foreach($checks as $check): ?>
-				<div class="col-xs-6 col-sm-3">
+				<div class="col-xs-3">
 					<label>
-						<input type="checkbox" class="<?php echo $check; ?>">
-						<span class="<?php echo $check; ?>"></span>
-						<?php echo $check; ?> 
+						<input type="checkbox" class="wpska-check">
+						<span class="wpska-check-0">[ ] Vazio</span>
+						<span class="wpska-check-1">[x] Selecionado</span>
 					</label>
 				</div>
-				<?php endforeach; ?>
+
+				<div class="col-xs-3">
+					<label>
+						<input type="checkbox" class="wpska-check">
+						<span class="wpska-check-0"><i class="fa fa-fw fa-circle-o"></i> Vazio</span>
+						<span class="wpska-check-1"><i class="fa fa-fw fa-circle"></i> Selecionado</span>
+					</label>
+				</div>
+
+				<div class="col-xs-3">
+					<label>
+						<input type="checkbox" class="wpska-check">
+						<span class="wpska-check-0"><i class="fa fa-fw fa-square-o"></i> Vazio</span>
+						<span class="wpska-check-1"><i class="fa fa-fw fa-square"></i> Selecionado</span>
+					</label>
+				</div>
+
+				<div class="col-xs-3">
+					<label>
+						<input type="checkbox" class="wpska-check">
+						<span class="wpska-check-0"><i class="fa fa-fw fa-square-o"></i> Vazio</span>
+						<span class="wpska-check-1"><i class="fa fa-fw fa-check-square-o"></i> Selecionado</span>
+					</label>
+				</div>
+
+				<div class="col-xs-3">
+					<label>
+						<input type="radio" name="aaa" value="1" class="wpska-check">
+						<span class="wpska-check-0">[ ] Vazio</span>
+						<span class="wpska-check-1">[x] Selecionado</span>
+					</label>
+				</div>
+
+				<div class="col-xs-3">
+					<label>
+						<input type="radio" name="aaa" value="2" class="wpska-check">
+						<span class="wpska-check-0"><i class="fa fa-fw fa-circle-o"></i> Vazio</span>
+						<span class="wpska-check-1"><i class="fa fa-fw fa-circle"></i> Selecionado</span>
+					</label>
+				</div>
+
+				<div class="col-xs-3">
+					<label>
+						<input type="radio" name="aaa" value="3" class="wpska-check">
+						<span class="wpska-check-0"><i class="fa fa-fw fa-square-o"></i> Vazio</span>
+						<span class="wpska-check-1"><i class="fa fa-fw fa-square"></i> Selecionado</span>
+					</label>
+				</div>
+
+				<div class="col-xs-3">
+					<label>
+						<input type="radio" name="aaa" value="4" class="wpska-check">
+						<span class="wpska-check-0"><i class="fa fa-fw fa-square-o"></i> Vazio</span>
+						<span class="wpska-check-1"><i class="fa fa-fw fa-check-square-o"></i> Selecionado</span>
+					</label>
+				</div>
 			</div>
 		</div>
 	</div>
+
+	<div class="panel panel-default">
+		<div class="panel-heading">Wpska select</div>
+		<div class="panel-body">
+			<div class="row">
+				<div class="col-sm-6 form-group">
+					<label>Opção única</label>
+					<div data-wpska-select="">
+						<input type="text" class="form-control">
+						<div class="list-group">
+							<label class="list-group-item">
+								<input type="radio" name="bbb" value="Aaa" placeholder="Aaa">
+								<div>
+									<strong>Aaa</strong><br>
+									<small class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Perferendis, assumenda ipsum sunt officia at.</small>
+								</div>
+							</label>
+
+							<label class="list-group-item">
+								<input type="radio" name="bbb" value="Bbb" placeholder="Bbb">
+								<div>
+									<strong>Bbb</strong><br>
+									<small class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Magnam atque doloribus recusandae quam adipisci.</small>
+								</div>
+							</label>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-sm-6 form-group">
+					<label>Opções múltiplas</label>
+					<div data-wpska-select="">
+						<input type="text" class="form-control">
+						<div class="list-group">
+							<label class="list-group-item">
+								<input type="checkbox" placeholder="Aaa">
+								<div>
+									<strong>Aaa</strong><br>
+									<small class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Perferendis, assumenda ipsum sunt officia at.</small>
+								</div>
+							</label>
+
+							<label class="list-group-item">
+								<input type="checkbox" placeholder="Bbb">
+								<div>
+									<strong>Bbb</strong><br>
+									<small class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Magnam atque doloribus recusandae quam adipisci.</small>
+								</div>
+							</label>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
 
 	<div class="panel panel-default">
 		<div class="panel-heading">Masks</div>
@@ -219,27 +319,32 @@ Route::get('', function() {
 	</div>
 
 	<script>
-	new Vue2({
-		el: "#app-vue2",
-		data: {
-			items: [],
-			selecteds: [],
-		},
-		methods: {
-			_item: function(item) {
-				return this._default(item, {
-					name: "Item #{id}",
-					thumb: ("https://picsum.photos/200/200?rand="+Math.round(Math.random()*999)),
-				});
+	window.wpskaInitVue2 = function() {
+		new Vue2({
+			el: "#app-vue2",
+			data: {
+				items: [],
+				selecteds: [],
 			},
-			_itemAdd: function(item) {
-				item = this._item(item);
-				return this._prepend(this, "items", item);
+			methods: {
+				_item: function(item) {
+					return this._default(item, {
+						name: "Item #{id}",
+						thumb: ("https://picsum.photos/200/200?rand="+Math.round(Math.random()*999)),
+					});
+				},
+				_itemAdd: function(item) {
+					item = this._item(item);
+					return this._prepend(this, "items", item);
+				},
 			},
-		},
-	});
+		});
+	};
 	</script>
 	<?php });
+
+
+
 
 
 
@@ -535,7 +640,7 @@ Route::get('', function() {
 	<base href="http://projetos.jsiqueira.com/tests/wpska/">
 	<script src="http://projetos.jsiqueira.com/tests/wpska/wpska.js"></script>
 </head>
-<body>
+<body data-bootswatch="flatly">
 	
 	<!-- Loading -->
 	<div class="wpska-loading" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#fff; z-index:99;">

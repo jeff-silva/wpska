@@ -17,28 +17,7 @@ input.wpska-check + .wpska-check-0 + .wpska-check-1 {display:none;}
 input.wpska-check:checked {border:solid}
 input.wpska-check:checked + .wpska-check-0 {display:none;}
 input.wpska-check:checked + .wpska-check-0 + .wpska-check-1 {display:initial;}
-/*
-input.wpska-radio {display:none;}
-input.wpska-radio + .wpska-radio:before {font-family:FontAwesome; content:"\f111";}
-input:checked.wpska-radio + .wpska-radio:before {content:"\f058";}
 
-input.wpska-radio-o {display:none;}
-input.wpska-radio-o + .wpska-radio-o:before {font-family:FontAwesome; content:"\f10c";}
-input:checked.wpska-radio-o + .wpska-radio-o:before {content:"\f05d";}
-
-input.wpska-check {display:none;}
-input.wpska-check + .wpska-check:before {font-family:FontAwesome; content:"\f0c8";}
-input:checked.wpska-check + .wpska-check:before {content:"\f14a";}
-
-input.wpska-check-o {display:none;}
-input.wpska-check-o + .wpska-check-o:before {font-family:FontAwesome; content:"\f096";}
-input:checked.wpska-check-o + .wpska-check-o:before {content:"\f046"; margin-right:-2px;}
-
-input.wpska-check-toggle {display:none;}
-input:checked.wpska-check-toggle + .wpska-check-toggle:after {left:auto; right:0%;}
-.wpska-check-toggle {display:inline-block; vertical-align:middle; position:relative; width:50px; height:20px; overflow:hidden; border-radius:50px; background:#e3e3ff;}
-.wpska-check-toggle:after {content:""; position:absolute; top:0; right:50%; width:100%; height:100%; background:#b7b1b1; border-radius:50px; transition: all 200ms ease;}
-*/
 
 /* Popup modal */
 .wpska-popup {display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,.5); z-index:99999;}
@@ -53,6 +32,14 @@ input:checked.wpska-check-toggle + .wpska-check-toggle:after {left:auto; right:0
 .wpska-loading-03:before {content:''; display:inline-block; width:100%; height:100%; margin:0px; border-radius:50%; border: 2px solid transparent; border-top-color: #07d; border-bottom-color: #07d; animation: _wpska_loading .6s linear infinite;}
 .wpska-loading-04:before {content:''; display:inline-block; width:100%; height:100%; margin:0px; border-radius:50%; border-top: 2px solid #07d; border-right: 2px solid transparent; animation: _wpska_loading .6s linear infinite;}
 .wpska-loading-05:before {content:''; display:inline-block; width:100%; height:100%; margin:0px; border-radius:50%; border: 1px solid #f6f; border-top-color: #0e0; border-right-color: #0dd; border-bottom-color: #f90; animation: _wpska_loading .6s linear infinite;}
+
+
+/* Wpska select */
+[data-wpska-select] {position:relative;}
+[data-wpska-select] > .list-group {position:absolute; top:100%; left:0; width:100%; z-index:2;}
+[data-wpska-select] > .list-group > .list-group-item {cursor:pointer;}
+[data-wpska-select] > .list-group > .list-group-item > input {display:none;}
+[data-wpska-select] > .list-group > .list-group-item > input:checked + div:before {float:right; font-family:FontAwesome !important; content:"\f00c";}
 
 
 /* Bugfixes */
