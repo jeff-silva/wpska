@@ -180,8 +180,8 @@ window.wpska = window.wpska||(function() {
 		]);
 
 
-		// [data-wpska-select]
-		$("[data-wpska-select]").each(function() {
+		// .wpska-select
+		$(".wpska-select").each(function() {
 			var $parent = $(this);
 			var $input = $parent.find("input[type=text]");
 			var $list = $parent.find(".list-group");
@@ -229,8 +229,8 @@ window.wpska = window.wpska||(function() {
 		});
 
 		$(document).click(function(ev) {
-			var $not = $(ev.target).closest("[data-wpska-select]").find("> .list-group");
-			$("[data-wpska-select] > .list-group").not($not).slideUp(200);
+			var $not = $(ev.target).closest(".wpska-select").find("> .list-group");
+			$(".wpska-select > .list-group").not($not).slideUp(200);
 		});
 
 

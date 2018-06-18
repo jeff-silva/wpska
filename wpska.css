@@ -12,6 +12,7 @@
 </label>
 */
 input.wpska-check {display:none;}
+input.wpska-check-0, input.wpska-check-1 {user-select: none; -moz-user-select: none; -khtml-user-select: none; -webkit-user-select: none; -o-user-select: none;}
 input.wpska-check + .wpska-check-0 {display:initial;}
 input.wpska-check + .wpska-check-0 + .wpska-check-1 {display:none;}
 input.wpska-check:checked {border:solid}
@@ -35,11 +36,11 @@ input.wpska-check:checked + .wpska-check-0 + .wpska-check-1 {display:initial;}
 
 
 /* Wpska select */
-[data-wpska-select] {position:relative;}
-[data-wpska-select] > .list-group {position:absolute; top:100%; left:0; width:100%; z-index:2;}
-[data-wpska-select] > .list-group > .list-group-item {cursor:pointer;}
-[data-wpska-select] > .list-group > .list-group-item > input {display:none;}
-[data-wpska-select] > .list-group > .list-group-item > input:checked + div:before {float:right; font-family:FontAwesome !important; content:"\f00c";}
+.wpska-select {position:relative;}
+.wpska-select > .list-group {position:absolute; top:100%; left:0; width:100%; z-index:2;}
+.wpska-select > .list-group > .list-group-item {cursor:pointer;}
+.wpska-select > .list-group > .list-group-item > input {display:none;}
+.wpska-select > .list-group > .list-group-item > input:checked + div:before {float:right; font-family:FontAwesome !important; content:"\f00c";}
 
 
 /* Bugfixes */

@@ -199,7 +199,7 @@ Route::get('', function() {
 			<div class="row">
 				<div class="col-sm-6 form-group">
 					<label>Opção única</label>
-					<div data-wpska-select="">
+					<div class="wpska-select">
 						<input type="text" class="form-control">
 						<div class="list-group">
 							<label class="list-group-item">
@@ -223,7 +223,7 @@ Route::get('', function() {
 
 				<div class="col-sm-6 form-group">
 					<label>Opções múltiplas</label>
-					<div data-wpska-select="">
+					<div class="wpska-select">
 						<input type="text" class="form-control">
 						<div class="list-group">
 							<label class="list-group-item">
