@@ -45,7 +45,7 @@ class Tab
 
 	static function add($title, $callback)
 	{
-		$id = base64_encode($title);
+		$id = strtolower(preg_replace('/[^a-zA-Z0-9-]+/', '-', $title));
 		self::$tabs[] = array('id'=>$id, 'title'=>$title, 'callback'=>$callback);
 		self::$tab = isset($_GET['tab'])? $_GET['tab']: false;
 		self::$tab = (!self::$tab AND sizeof(self::$tabs)>=1)? self::$tabs[0]['id']: self::$tab;
@@ -637,8 +637,8 @@ Route::get('', function() {
 <head>
 <meta charset="UTF-8">
 	<title>Wpska</title>
-	<base href="http://projetos.jsiqueira.com/tests/wpska/">
-	<script src="http://projetos.jsiqueira.com/tests/wpska/wpska.js"></script>
+	<base href="http://projetos.jsiqueira.com/git/wpska/">
+	<script src="./wpska.js"></script>
 </head>
 <body data-bootswatch="flatly">
 	
