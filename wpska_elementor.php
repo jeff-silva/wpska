@@ -1,5 +1,7 @@
 <?php
 
+if (! class_exists('\Elementor\Base_Data_Control')) return false;
+
 class Wpska_Elementor_Controls_Posts extends \Elementor\Base_Data_Control {
 
 	public function get_type() {
