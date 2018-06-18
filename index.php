@@ -390,7 +390,7 @@ Route::get('', function() {
 
 
 	Tab::add('Flatpicker', function() { ?>
-	<div data-vue='{data:{pickr1:null, pickr2:null}}'>
+	<div id="app-flatpickr">
 		<div class="row">
 			<div class="col-xs-6">
 				<input type="text" class="form-control" data-flatpickr="{}" v-model="pickr1">
@@ -402,6 +402,17 @@ Route::get('', function() {
 			</div>
 		</div>
 	</div>
+	<script>
+	window.wpskaInitFlatpickr = function() {
+		new Vue2({
+			el: "#app-flatpickr",
+			data: {
+				pickr1: null,
+				pickr2: null,
+			},
+		});
+	};
+	</script>
 	<?php });
 
 
