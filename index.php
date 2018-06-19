@@ -126,23 +126,6 @@ Route::get('', function() {
 
 	<div id="app-form">
 		<div class="panel panel-default">
-			<div class="panel-heading">Masks</div>
-			<div class="panel-body">
-				<div class="row">
-					<div class="form-group col-xs-6">
-						<label>CPF</label>
-						<input type="text" class="form-control" data-mask="999.999.999-99">
-					</div>
-
-					<div class="form-group col-xs-6">
-						<label>Phone</label>
-						<input type="text" class="form-control" data-mask="(99) 99999-9999">
-					</div>
-				</div>
-			</div>
-		</div>
-
-		<div class="panel panel-default">
 			<div class="panel-body">
 				<div class="row">
 					<div class="col-xs-12 text-right">
