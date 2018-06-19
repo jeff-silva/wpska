@@ -56,7 +56,7 @@ class Tab
 	{
 		echo '<ul class="list-group">';
 		foreach(self::$tabs as $tab) {
-			$theme = (isset($_GET['theme']) AND !empty($_GET['theme']))? $_GET['theme']: 'flatly';
+			$theme = (isset($_GET['theme']) AND !empty($_GET['theme']))? $_GET['theme']: '';
 			echo "<li class='list-group-item'><a href='?tab={$tab['id']}&theme={$theme}'>{$tab['title']}</a></li>";
 		}
 		echo '</ul>';
@@ -126,179 +126,6 @@ Route::get('', function() {
 
 	<div id="app-form">
 		<div class="panel panel-default">
-			<div class="panel-heading">Checks</div>
-			<div class="panel-body">
-				<div class="row">
-					<div class="col-xs-3">
-						<label>
-							<input type="checkbox" class="wpska-check" v-model="form.check1">
-							<span class="wpska-check-0">[ ] Vazio</span>
-							<span class="wpska-check-1">[x] Selecionado</span>
-						</label>
-					</div>
-
-					<div class="col-xs-3">
-						<label>
-							<input type="checkbox" class="wpska-check" v-model="form.check2">
-							<span class="wpska-check-0"><i class="fa fa-fw fa-circle-o"></i> Vazio</span>
-							<span class="wpska-check-1"><i class="fa fa-fw fa-circle"></i> Selecionado</span>
-						</label>
-					</div>
-
-					<div class="col-xs-3">
-						<label>
-							<input type="checkbox" class="wpska-check" v-model="form.check3">
-							<span class="wpska-check-0"><i class="fa fa-fw fa-square-o"></i> Vazio</span>
-							<span class="wpska-check-1"><i class="fa fa-fw fa-square"></i> Selecionado</span>
-						</label>
-					</div>
-
-					<div class="col-xs-3">
-						<label>
-							<input type="checkbox" class="wpska-check" v-model="form.check4">
-							<span class="wpska-check-0"><i class="fa fa-fw fa-square-o"></i> Vazio</span>
-							<span class="wpska-check-1"><i class="fa fa-fw fa-check-square-o"></i> Selecionado</span>
-						</label>
-					</div>
-
-					<div class="col-xs-3">
-						<label>
-							<input type="radio" name="aaa" value="1" class="wpska-check" v-model="form.radio">
-							<span class="wpska-check-0">[ ] Vazio</span>
-							<span class="wpska-check-1">[x] Selecionado</span>
-						</label>
-					</div>
-
-					<div class="col-xs-3">
-						<label>
-							<input type="radio" name="aaa" value="2" class="wpska-check" v-model="form.radio">
-							<span class="wpska-check-0"><i class="fa fa-fw fa-circle-o"></i> Vazio</span>
-							<span class="wpska-check-1"><i class="fa fa-fw fa-circle"></i> Selecionado</span>
-						</label>
-					</div>
-
-					<div class="col-xs-3">
-						<label>
-							<input type="radio" name="aaa" value="3" class="wpska-check" v-model="form.radio">
-							<span class="wpska-check-0"><i class="fa fa-fw fa-square-o"></i> Vazio</span>
-							<span class="wpska-check-1"><i class="fa fa-fw fa-square"></i> Selecionado</span>
-						</label>
-					</div>
-
-					<div class="col-xs-3">
-						<label>
-							<input type="radio" name="aaa" value="4" class="wpska-check" v-model="form.radio">
-							<span class="wpska-check-0"><i class="fa fa-fw fa-square-o"></i> Vazio</span>
-							<span class="wpska-check-1"><i class="fa fa-fw fa-check-square-o"></i> Selecionado</span>
-						</label>
-					</div>
-				</div>
-			</div>
-		</div>
-
-		<div class="panel panel-default">
-			<div class="panel-heading">Wpska select</div>
-			<div class="panel-body">
-				<div class="row">
-					<div class="col-xs-3">
-						<select class="form-control wpska-select" v-model="form.select1">
-							<option value="">Selecione</option>
-							<option value="mg">Minas Gerais</option>
-							<option value="rj">Rio de Janeiro</option>
-							<option value="sp">São Paulo</option>
-						</select>
-					</div>
-
-					<div class="col-xs-3">
-						<select class="form-control wpska-select" v-model="form.select1">
-							<option value="">Selecione</option>
-							<option value="mg">Minas Gerais</option>
-							<option value="rj">Rio de Janeiro</option>
-							<option value="sp">São Paulo</option>
-						</select>
-					</div>
-
-					<div class="col-xs-3">
-						<select class="form-control wpska-select" multiple v-model="form.select2">
-							<option value="mg" selected data-content='<strong>Minas Gerais</strong><br><small class="text-muted">Minas Gerais dá leite</small>'>Minas Gerais</option>
-							<option value="rj" selected data-content='<strong>Rio de Janeiro</strong><br><small class="text-muted">No Rio, tem a Vila Isabel, que dá samba.</small>'>Rio de Janeiro</option>
-							<option value="sp" data-content='<strong>São Paulo</strong><br><small class="text-muted">São Paulo é o estado que dá café.</small>'>São Paulo</option>
-						</select>
-					</div>
-
-					<div class="col-xs-3">
-						<select class="form-control wpska-select" multiple v-model="form.select2">
-							<option value="mg" selected data-content='<strong>Minas Gerais</strong><br><small class="text-muted">Minas Gerais dá leite</small>'>Minas Gerais</option>
-							<option value="rj" selected data-content='<strong>Rio de Janeiro</strong><br><small class="text-muted">No Rio, tem a Vila Isabel, que dá samba.</small>'>Rio de Janeiro</option>
-							<option value="sp" data-content='<strong>São Paulo</strong><br><small class="text-muted">São Paulo é o estado que dá café.</small>'>São Paulo</option>
-						</select>
-					</div>
-
-					<div class="col-xs-3"><br>
-						<select class="wpska-select" v-model="form.select3">
-							<optgroup label="Cores">
-								<option value="#ff0000">Vermelho</option>
-								<option value="#00ff00">Verde</option>
-								<option value="#0000ff">Azul</option>
-							</optgroup>
-							<optgroup label="Frutas">
-								<option value="banana">Banana</option>
-								<option value="goiaba">Goiaba</option>
-								<option value="carambola">Carambola</option>
-							</optgroup>
-						</select>
-					</div>
-
-					<div class="col-xs-3"><br>
-						<select class="wpska-select" v-model="form.select3">
-							<optgroup label="Cores">
-								<option value="#ff0000">Vermelho</option>
-								<option value="#00ff00">Verde</option>
-								<option value="#0000ff">Azul</option>
-							</optgroup>
-							<optgroup label="Frutas">
-								<option value="banana">Banana</option>
-								<option value="goiaba">Goiaba</option>
-								<option value="carambola">Carambola</option>
-							</optgroup>
-						</select>
-					</div>
-
-					<div class="col-xs-3"><br>
-						<select class="wpska-select" multiple v-model="form.select4">
-							<optgroup label="Cores">
-								<option value="#ff0000">Vermelho</option>
-								<option value="#00ff00">Verde</option>
-								<option value="#0000ff">Azul</option>
-							</optgroup>
-							<optgroup label="Frutas">
-								<option value="banana">Banana</option>
-								<option value="goiaba">Goiaba</option>
-								<option value="carambola">Carambola</option>
-							</optgroup>
-						</select>
-					</div>
-
-					<div class="col-xs-3"><br>
-						<select class="wpska-select" multiple v-model="form.select4">
-							<optgroup label="Cores">
-								<option value="#ff0000">Vermelho</option>
-								<option value="#00ff00">Verde</option>
-								<option value="#0000ff">Azul</option>
-							</optgroup>
-							<optgroup label="Frutas">
-								<option value="banana">Banana</option>
-								<option value="goiaba">Goiaba</option>
-								<option value="carambola">Carambola</option>
-							</optgroup>
-						</select>
-					</div>
-				</div>
-			</div>
-		</div>
-
-
-		<div class="panel panel-default">
 			<div class="panel-heading">Masks</div>
 			<div class="panel-body">
 				<div class="row">
@@ -315,6 +142,77 @@ Route::get('', function() {
 			</div>
 		</div>
 
+		<div class="panel panel-default">
+			<div class="panel-body">
+				<div class="row">
+					<div class="col-xs-12 text-right">
+						<button class="btn btn-default" @click="_inputAdd();">Add</button>
+					</div>
+					<div class="col-xs-12" v-for="input in inputs">
+						<div class="panel panel-default">
+							<div class="panel-body">
+								<div class="row">
+									<div class="col-xs-6">
+										<div class="form-group">
+											<label>Tipo</label>
+											<select class="form-control wpska-select" v-model="input.type">
+												<option value="">Selecione</option>
+												<option value="checkbox">Checkbox</option>
+												<option value="radio">Radio</option>
+												<option value="select">Select</option>
+											</select>
+										</div>
+
+										<div class="form-group">
+											<label>Name</label>
+											<input type="text" class="form-control" v-model="input.name">
+										</div>
+
+										<div class="form-group">
+											<label>Options</label>
+											<textarea class="form-control" v-model="input.options" @keyup="_inputOptionsToArr(input);"></textarea>
+										</div>
+									</div>
+
+									<div class="col-xs-6">
+										<div class="panel panel-default">
+											<div class="panel-body">
+												<div v-if="input.type==''">
+													Nenhum selecionado
+												</div>
+
+												<div v-if="input.type=='checkbox'">
+													<label>
+														<input type="checkbox" class="wpska-check" :name="input.name" v-model="input.value">
+														<span class="wpska-check-0"><i class="fa fa-fw fa-square-o"></i></span>
+														<span class="wpska-check-1"><i class="fa fa-fw fa-check-square-o"></i></span>
+													</label>
+												</div>
+
+												<div v-if="input.type=='radio'">
+													<label style="display:block;" v-for="opt in input.optionsArr">
+														<input type="checkbox" class="wpska-check" :name="input.name" v-model="opt.value" :checked="opt.selected">
+														<span class="wpska-check-0"><i class="fa fa-fw fa-circle-o"></i> {{ opt.label }}</span>
+														<span class="wpska-check-1"><i class="fa fa-fw fa-check-circle-o"></i> {{ opt.label }}</span>
+													</label>
+												</div>
+
+												<div v-if="input.type=='select'">
+													<select class="form-control wpska-select" :name="input.name">
+														<option :value="opt.value" :selected="opt.selected" v-for="opt in input.optionsArr">{{ opt.label }}</option>
+													</select>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
 		<pre>{{ $data }}</pre>
 	</div>
 
@@ -324,6 +222,31 @@ Route::get('', function() {
 			el: "#app-form",
 			data: {
 				form: {},
+				inputs: [],
+			},
+			methods: {
+				_inputAdd: function() {
+					this.inputs.push({
+						type:"select",
+						name:"",
+						value:"",
+						options:"",
+						optionsArr:[],
+					});
+				},
+				_inputOptionsToArr: function(input) {
+					var opts = [];
+					var optionsArr = input.options.split("\n");
+					for(var i in optionsArr) {
+						if (! optionsArr[i]) continue;
+						opts.push({
+							label: optionsArr[i],
+							value: optionsArr[i],
+							selected: false,
+						});
+					}
+					input.optionsArr = opts;
+				},
 			},
 		});
 	};
@@ -740,7 +663,7 @@ Route::get('', function() {
 	<base href="http://projetos.jsiqueira.com/git/wpska/">
 	<script src="./wpska.js"></script>
 </head>
-<?php $theme = (isset($_GET['theme']) AND !empty($_GET['theme']))? $_GET['theme']: 'flatly'; ?>
+<?php $theme = (isset($_GET['theme']) AND !empty($_GET['theme']))? $_GET['theme']: ''; ?>
 <body data-bootswatch="<?php echo $theme; ?>">
 	
 	<!-- Loading -->

@@ -219,8 +219,7 @@ window.wpska = window.wpska||(function() {
 			$listGroup = $( $listGroup );
 			$listGroup.css({width: $inputGroup.outerWidth()}).slideDown(200);
 			$listGroup.find(">.list-group-item").on("click", function() {
-				var value = $(this).attr("data-value")||'-----';
-				if (value=='-----') return;
+				var value = $(this).attr("data-value")||'';
 				var option = $select.find('option[value="'+value+'"]')[0];
 				option.selected = !option.selected;
 				_wpskaSelectSelected($select, $listGroup);
