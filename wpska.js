@@ -145,23 +145,24 @@ window.wpska = window.wpska||(function() {
 
 
 		// data-flatpickr
-		$("[data-flatpickr]").wpskaLoad(function() {
+		$(document).on("focus", "[data-flatpickr]", function() {
+			var $input = $(this);
+			$("[data-flatpickr]").wpskaLoad(function() {
 
-			var Portuguese = {
-				weekdays: {
-					shorthand: ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"],
-					longhand: ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado",],
-				},
-				months: {
-					shorthand: ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"],
-					longhand: ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
-				},
-				rangeSeparator: " até ",
-			};
+				var Portuguese = {
+					weekdays: {
+						shorthand: ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"],
+						longhand: ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado",],
+					},
+					months: {
+						shorthand: ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"],
+						longhand: ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
+					},
+					rangeSeparator: " até ",
+				};
 
 
-			$("[data-flatpickr]").each(function() {
-				var params = $(this).wpskaParams("data-flatpickr", {
+				var params = $input.wpskaParams("data-flatpickr", {
 					dateFormat: 'Y-m-d H:i:S',
 					altInput: true,
 					altFormat: 'd/m/Y - H:i',
@@ -170,124 +171,98 @@ window.wpska = window.wpska||(function() {
 					time_24hr: true,
 					locale: Portuguese,
 				});
-				var pickr = flatpickr(this, params);
-				// $(this).flatpickr(params);
+
+				params.onClose = function(selectedDates, dateStr, instance) {
+					// instance.destroy();
+				};
+
+				var pickr = flatpickr($input[0], params);
+				pickr.open();
 				this.flatpickr = function() { return pickr; };
-			});
-		}, [
-			"https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.4.3/flatpickr.min.css",
-			"https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.4.3/flatpickr.min.js",
-		]);
+			}, [
+				"https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.4.3/flatpickr.min.css",
+				"https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.4.3/flatpickr.min.js",
+			]);
+		});
 
 
-		var _wpskaSelectSelected = function($select, $listGroup) {
-			var $input = $select.next('.input-group').find('input');
-			if ($listGroup) $listGroup.find(">.list-group-item").removeClass("active");
-			value = [];
-			$select.find("option").each(function(i) {
-				if (this.selected) {
-					if ($listGroup) $listGroup.find('[data-value="'+this.value+'"]').addClass("active");
-					if (this.value) value.push(this.innerHTML);
-				}
-			});
-			$input.val(value.join(', '));
-		};
-
-		var _wpskaSelectOpen = function($select) {
-			var $inputGroup = $select.next('.input-group');
-
-			var _wpskaSelectOption = function(opt) {
-				var content = opt.dataset.content||opt.innerHTML;
-				var value = opt.value;
-				return '<div class="list-group-item" data-value="'+value+'"><div class="i fa fa-check pull-right"></div>'+content+'</div>';
+		// wpska-select
+		var _wpskaSelectOptionsRender = function($wrapper) {
+			var $select = $wrapper.find("select");
+			var $input = $wrapper.find("input");
+			$wrapper.find(".input-group").remove();
+			var $listGroup = $('<div class="list-group"></div>').appendTo($wrapper);
+			var _renderOption = function(option) {
+				var label = option.dataset.content||option.innerHTML;
+				var value = option.value;
+				var selected = option.selected? 'active': '';
+				$listGroup.append('<div class="list-group-item '+selected+'" data-value="'+value+'"><i class="fa fa-check pull-right"></i>'+ label +'</div>');
 			};
-
-			var $listGroup = '<div class="list-group wpska-select-list-group" style="position:absolute; display:none; cursor:pointer; z-index:9; max-height:300px; overflow:auto;">';
 			$select.find(">*").each(function() {
 				if (this.tagName=="OPTGROUP") {
-					$listGroup += '<div class="list-group-item text-muted">'+ (this.label.toUpperCase()) +'</div>';
+					$listGroup.append('<div class="list-group-item text-muted text-uppercase">'+ (this.label||'-') +'</div>');
 					$(this).find(">*").each(function() {
-						$listGroup += _wpskaSelectOption(this);
+						_renderOption(this);
 					});
 				}
 				else if (this.tagName=="OPTION") {
-					$listGroup += _wpskaSelectOption(this);
+					_renderOption(this);
 				}
 			});
-			$listGroup += '</div>';
-
-			$listGroup = $( $listGroup );
-			$listGroup.css({width: $inputGroup.outerWidth()}).slideDown(200);
-			$listGroup.find(">.list-group-item").on("click", function() {
-				var value = $(this).attr("data-value")||'';
-				var option = $select.find('option[value="'+value+'"]')[0];
-				option.selected = !option.selected;
-				_wpskaSelectSelected($select, $listGroup);
+			$listGroup.find("[data-value]").on("click", function() {
+				var value = $(this).attr("data-value");
+				var $option = $select.find('option[value="'+value+'"]');
+				$option[0].selected = !$option[0].selected;
 				$select[0].dispatchEvent(new Event("change"));
 				$select.trigger("change");
+				_wpskaSelectOptionsRender($wrapper);
 			});
 
-			$inputGroup.after($listGroup);
+			_wpskaSelectValue($wrapper);
 
 			return $listGroup;
 		};
 
-		var _wpskaSelectClose = function($not) {
-			$(".wpska-select-list-group").not($not).each(function() {
-				var $icon = $(this).prev('.input-group').find('i');
-				$(this).slideUp(200, function() {
-					$icon.attr('class', 'fa fa-fw fa-chevron-left');
-					$(this).remove();
-				});
+
+		var _wpskaSelectValue = function($wrapper) {
+			var $select = $wrapper.find("select");
+			var $input = $wrapper.find("input");
+			var inputValue = [];
+			$select.find("option").each(function() {
+				if (this.selected && this.value) {
+					inputValue.push(this.innerHTML);
+				}
 			});
+			$input.val(inputValue.join(', '));
 		};
 
 
-		// .wpska-select
-		$("select.wpska-select").each(function() {
-			var $select = $(this);
-			var $inputGroup = $('<div class="input-group"><input type="text" class="form-control wpska-select-input" /><div class="input-group-addon"><i class="fa fa-fw fa-chevron-left"></i></div></div>');
-			var $input = $inputGroup.find("input");
-			var $icon = $inputGroup.find("i");
-
-			$select.hide().after($inputGroup);
-			setTimeout(function() {
-				_wpskaSelectSelected($select);
-			}, 100);
+		$(document).on("focus", ".wpska-select input", function() {
+			var $input = $(this);
+			var $wrapper = $(this).parent();
+			var $select = $wrapper.find("select");
+			var $listGroup = _wpskaSelectOptionsRender($wrapper);
+			$(".wpska-select").removeClass("wpska-select-active");
+			$wrapper.addClass("wpska-select-active");
 		});
 
-		$(document).on("change", "select.wpska-select", function() {
+		$(document).on("change", ".wpska-select select", function() {
 			setTimeout(function() {
-				$("select.wpska-select").each(function(i) {
-					var $select = $(this);
-					_wpskaSelectSelected($select);
+				$(".wpska-select").each(function(i) {
+					var $wrapper = $(this);
+					_wpskaSelectOptionsRender($wrapper);
 				});
 			}, 50);
 		});
 
-		$(document).on("focus", ".wpska-select-input", function() {
-			var $input = $(this);
-			var $inputGroup = $(this).parent();
-			var $icon = $inputGroup.find("i");
-			var $select = $inputGroup.prev("select");
-
-			_wpskaSelectClose();
-			$icon.attr('class', 'fa fa-fw fa-chevron-down');
-			var $listGroup = _wpskaSelectOpen($select);
-			_wpskaSelectSelected($select, $listGroup);
-			
+		$(document).on("click", function(ev) {
+			var $not = $(ev.target).closest(".wpska-select");
+			$(".wpska-select").not($not).removeClass("wpska-select-active");
 		});
 
-		$(document).on("click", function(ev) {
-			if ( $(ev.target).hasClass("wpska-select-input") ) {
-				var $not = $(ev.target).parent().next(".wpska-select-list-group");
-			}
-			else {
-				var $not = $(ev.target).closest(".wpska-select-list-group");
-			}
-			setTimeout(function() {
-				_wpskaSelectClose($not);
-			}, 50);
+		$(".wpska-select").each(function() {
+			var $wrapper = $(this);
+			_wpskaSelectValue($wrapper);
 		});
 
 
@@ -322,6 +297,20 @@ window.wpska = window.wpska||(function() {
 			"https://cdn.jsdelivr.net/npm/emmet-codemirror@1.2.5/dist/emmet.js",
 		]);
 
+
+
+		// medium
+		$(document).on("click", "[data-medium]", function() {
+			var $medium = $(this);
+			$medium.wpskaLoad(function() {
+				$medium.css({height:"auto"});
+				var editor = new MediumEditor($medium);
+			}, [
+				"//cdn.jsdelivr.net/npm/medium-editor@latest/dist/js/medium-editor.min.js",
+				"//cdn.jsdelivr.net/npm/medium-editor@latest/dist/css/medium-editor.min.css",
+				"https://cdnjs.cloudflare.com/ajax/libs/medium-editor/5.23.3/css/themes/bootstrap.min.css",
+			]);
+		});
 
 
 		// loading

@@ -155,17 +155,34 @@ Route::get('', function() {
 									<div class="col-xs-6">
 										<div class="form-group">
 											<label>Tipo</label>
-											<select class="form-control wpska-select" v-model="input.type">
-												<option value="">Selecione</option>
-												<option value="checkbox">Checkbox</option>
-												<option value="radio">Radio</option>
-												<option value="select">Select</option>
-											</select>
+											<div class="wpska-select">
+												<input type="text" class="form-control">
+												<select class="form-control" v-model="input.type">
+													<option value="">Selecione</option>
+													<option value="text">Text</option>
+													<option value="textarea">Textarea</option>
+													<option value="checkbox">Checkbox</option>
+													<option value="radio">Radio</option>
+													<option value="select">Select</option>
+													<option value="flatpickr">Flatpickr</option>
+													<option value="medium">Medium</option>
+												</select>
+											</div>
 										</div>
 
 										<div class="form-group">
-											<label>Name</label>
+											<label>Nome</label>
 											<input type="text" class="form-control" v-model="input.name">
+										</div>
+
+										<div class="form-group">
+											<label>Valor</label>
+											<input type="text" class="form-control" v-model="input.value">
+										</div>
+
+										<div class="form-group">
+											<label>Máscara</label>
+											<input type="text" class="form-control" v-model="input.mask">
 										</div>
 
 										<div class="form-group">
@@ -177,18 +194,32 @@ Route::get('', function() {
 									<div class="col-xs-6">
 										<div class="panel panel-default">
 											<div class="panel-body">
+												
+												<!-- none -->
 												<div v-if="input.type==''">
 													Nenhum selecionado
 												</div>
 
+												<!-- text -->
+												<div v-if="input.type=='text'">
+													<input type="text" :name="input.name" class="form-control" v-model="input.value" :data-mask="input.mask">
+												</div>
+
+												<!-- textarea -->
+												<div v-if="input.type=='textarea'">
+													<textarea :name="input.name" class="form-control" v-model="input.value"></textarea>
+												</div>
+
+												<!-- checkbox -->
 												<div v-if="input.type=='checkbox'">
 													<label>
 														<input type="checkbox" class="wpska-check" :name="input.name" v-model="input.value">
-														<span class="wpska-check-0"><i class="fa fa-fw fa-square-o"></i></span>
-														<span class="wpska-check-1"><i class="fa fa-fw fa-check-square-o"></i></span>
+														<span class="wpska-check-0"><i class="fa fa-fw fa-square-o"></i> {{ input.value }}</span>
+														<span class="wpska-check-1"><i class="fa fa-fw fa-check-square-o"></i> {{ input.value }}</span>
 													</label>
 												</div>
 
+												<!-- radio -->
 												<div v-if="input.type=='radio'">
 													<label style="display:block;" v-for="opt in input.optionsArr">
 														<input type="checkbox" class="wpska-check" :name="input.name" v-model="opt.value" :checked="opt.selected">
@@ -197,10 +228,25 @@ Route::get('', function() {
 													</label>
 												</div>
 
+												<!-- select -->
 												<div v-if="input.type=='select'">
-													<select class="form-control wpska-select" :name="input.name">
-														<option :value="opt.value" :selected="opt.selected" v-for="opt in input.optionsArr">{{ opt.label }}</option>
-													</select>
+													<div class="wpska-select">
+														<input type="text" class="form-control">
+														<select class="form-control wpska-select" :name="input.name" v-model="input.value">
+															<option :value="opt.value" :selected="opt.selected" v-for="opt in input.optionsArr">{{ opt.label }}</option>
+														</select>
+													</div>
+												</div>
+
+												<!-- flatpickr -->
+												<div v-if="input.type=='flatpickr'">
+													<input type="text" class="form-control" data-flatpickr="{}" v-model="input.value">
+												</div>
+
+												<!-- medium -->
+												<div v-if="input.type=='medium'">
+													<div class="form-control" data-medium="" @keyup="input.value = $event.target.innerHTML;">Aaa</div>
+													<textarea :name="input.name" class="form-control" v-model="input.value"></textarea>
 												</div>
 											</div>
 										</div>
@@ -227,9 +273,10 @@ Route::get('', function() {
 			methods: {
 				_inputAdd: function() {
 					this.inputs.push({
-						type:"select",
+						type:"",
 						name:"",
 						value:"",
+						mask:"",
 						options:"",
 						optionsArr:[],
 					});
@@ -251,6 +298,15 @@ Route::get('', function() {
 		});
 	};
 	</script>
+
+
+	<script>
+	window.wpskaInitSelect2 = function() {
+		
+	};
+	</script>
+
+
 	<?php });
 
 
@@ -372,34 +428,6 @@ Route::get('', function() {
 
 
 
-
-
-
-	Tab::add('Flatpicker', function() { ?>
-	<div id="app-flatpickr">
-		<div class="row">
-			<div class="col-xs-6">
-				<input type="text" class="form-control" data-flatpickr="{}" v-model="pickr1">
-				<pre>{{ pickr1 }}&nbsp;</pre>
-			</div>
-			<div class="col-xs-6">
-				<input type="text" class="form-control" data-flatpickr="{}" v-model="pickr2">
-				<pre>{{ pickr2 }}&nbsp;</pre>
-			</div>
-		</div>
-	</div>
-	<script>
-	window.wpskaInitFlatpickr = function() {
-		new Vue2({
-			el: "#app-flatpickr",
-			data: {
-				pickr1: null,
-				pickr2: null,
-			},
-		});
-	};
-	</script>
-	<?php });
 
 
 

@@ -36,9 +36,14 @@ input.wpska-check:checked + .wpska-check-0 + .wpska-check-1 {display:initial;}
 
 
 /* Wpska select */
-.wpska-select-list-group {min-width:150px;}
-.wpska-select-list-group .fa {display:none;}
-.wpska-select-list-group .active .fa {display:block;}
+.wpska-select {position:relative;}
+.wpska-select.wpska-select-active {}
+.wpska-select select {display:none;}
+.wpska-select .list-group {position:absolute; top:100%; left:0; width:100%; z-index:9; opacity:0; visibility:hidden; cursor:pointer;}
+.wpska-select .list-group-item .fa {opacity:0; visibility:hidden;}
+.wpska-select .list-group-item.active .fa {opacity:1; visibility:visible;}
+.wpska-select.wpska-select-active .list-group {opacity:1; visibility:visible;}
+.wpska-select, .wpska-select * {transition: all 200ms ease;}
 
 
 /* Bugfixes */
