@@ -180,57 +180,115 @@ window.wpska = window.wpska||(function() {
 		]);
 
 
-		// .wpska-select
-		$(".wpska-select").each(function() {
-			var $parent = $(this);
-			var $input = $parent.find("input[type=text]");
-			var $list = $parent.find(".list-group");
-			var $listItems = $list.find(">.list-group-item");
-			var $checks = $parent.find("input[type=checkbox], input[type=radio]");
-
-			$list.hide();
-
-			$input.on("focus", function() {
-				$listItems.show();
-				$list.slideDown(200);
+		var _wpskaSelectSelected = function($select, $listGroup) {
+			var $input = $select.next('.input-group').find('input');
+			if ($listGroup) $listGroup.find(">.list-group-item").removeClass("active");
+			value = [];
+			$select.find("option").each(function(i) {
+				if (this.selected) {
+					if ($listGroup) $listGroup.find('[data-value="'+this.value+'"]').addClass("active");
+					if (this.value) value.push(this.innerHTML);
+				}
 			});
+			$input.val(value.join(', '));
+		};
 
-			$input.on("keyup", function(ev) {
-				var search = this.value.toLowerCase();
-				if (search) {
-					$listItems.hide().each(function() {
-						var text = $(this).text().toLowerCase();
-						if (text.indexOf(search) >= 0) $(this).show();
+		var _wpskaSelectOpen = function($select) {
+			var $inputGroup = $select.next('.input-group');
+
+			var _wpskaSelectOption = function(opt) {
+				var content = opt.dataset.content||opt.innerHTML;
+				var value = opt.value;
+				return '<div class="list-group-item" data-value="'+value+'"><div class="i fa fa-check pull-right"></div>'+content+'</div>';
+			};
+
+			var $listGroup = '<div class="list-group wpska-select-list-group" style="position:absolute; display:none; cursor:pointer; z-index:9; max-height:300px; overflow:auto;">';
+			$select.find(">*").each(function() {
+				if (this.tagName=="OPTGROUP") {
+					$listGroup += '<div class="list-group-item text-muted">'+ (this.label.toUpperCase()) +'</div>';
+					$(this).find(">*").each(function() {
+						$listGroup += _wpskaSelectOption(this);
 					});
 				}
-				else {
-					$listItems.show();
+				else if (this.tagName=="OPTION") {
+					$listGroup += _wpskaSelectOption(this);
 				}
 			});
+			$listGroup += '</div>';
 
-			$checks.on("change", function() {
-				var values = [];
-				$checks.each(function() {
-					if (this.checked && this.value) {
-						var value = this.placeholder || $(this).parent().find(">div").text().trim();
-						values.push(value);
-					}
-				});
-				$input.val(values.join(', '));
+			$listGroup = $( $listGroup );
+			$listGroup.css({width: $inputGroup.outerWidth()}).slideDown(200);
+			$listGroup.find(">.list-group-item").on("click", function() {
+				var value = $(this).attr("data-value")||'-----';
+				if (value=='-----') return;
+				var option = $select.find('option[value="'+value+'"]')[0];
+				option.selected = !option.selected;
+				_wpskaSelectSelected($select, $listGroup);
+				$select[0].dispatchEvent(new Event("change"));
+				$select.trigger("change");
 			});
 
-			// $checks.on("click", function(ev) {
-			// 	if (this.type=="radio") {
-			// 		this.checked = !!this.checked;
-			// 	}
-			// });
+			$inputGroup.after($listGroup);
 
-			$checks.trigger("change");
+			return $listGroup;
+		};
+
+		var _wpskaSelectClose = function($not) {
+			$(".wpska-select-list-group").not($not).each(function() {
+				var $icon = $(this).prev('.input-group').find('i');
+				$(this).slideUp(200, function() {
+					$icon.attr('class', 'fa fa-fw fa-chevron-left');
+					$(this).remove();
+				});
+			});
+		};
+
+
+		// .wpska-select
+		$("select.wpska-select").each(function() {
+			var $select = $(this);
+			var $inputGroup = $('<div class="input-group"><input type="text" class="form-control wpska-select-input" /><div class="input-group-addon"><i class="fa fa-fw fa-chevron-left"></i></div></div>');
+			var $input = $inputGroup.find("input");
+			var $icon = $inputGroup.find("i");
+
+			$select.hide().after($inputGroup);
+			setTimeout(function() {
+				_wpskaSelectSelected($select);
+			}, 100);
 		});
 
-		$(document).click(function(ev) {
-			var $not = $(ev.target).closest(".wpska-select").find("> .list-group");
-			$(".wpska-select > .list-group").not($not).slideUp(200);
+		$(document).on("change", "select.wpska-select", function() {
+			setTimeout(function() {
+				$("select.wpska-select").each(function(i) {
+					var $select = $(this);
+					_wpskaSelectSelected($select);
+				});
+			}, 50);
+		});
+
+		$(document).on("focus", ".wpska-select-input", function() {
+			var $input = $(this);
+			var $inputGroup = $(this).parent();
+			var $icon = $inputGroup.find("i");
+			var $select = $inputGroup.prev("select");
+
+			_wpskaSelectClose();
+			$icon.attr('class', 'fa fa-fw fa-chevron-down');
+			var $listGroup = _wpskaSelectOpen($select);
+			_wpskaSelectSelected($select, $listGroup);
+			
+		});
+
+		$(document).on("click", function(ev) {
+			if ( $(ev.target).hasClass("wpska-select-input") ) {
+				var $not = $(ev.target).parent().next(".wpska-select-list-group");
+			}
+			else {
+				var $not = $(ev.target).closest(".wpska-select-list-group");
+			}
+			setTimeout(function() {
+				_wpskaSelectClose($not);
+			}, 50);
 		});
 
 

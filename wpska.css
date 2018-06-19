@@ -36,11 +36,9 @@ input.wpska-check:checked + .wpska-check-0 + .wpska-check-1 {display:initial;}
 
 
 /* Wpska select */
-.wpska-select {position:relative;}
-.wpska-select > .list-group {position:absolute; top:100%; left:0; width:100%; z-index:2;}
-.wpska-select > .list-group > .list-group-item {cursor:pointer;}
-.wpska-select > .list-group > .list-group-item > input {display:none;}
-.wpska-select > .list-group > .list-group-item > input:checked + div:before {float:right; font-family:FontAwesome !important; content:"\f00c";}
+.wpska-select-list-group {min-width:150px;}
+.wpska-select-list-group .fa {display:none;}
+.wpska-select-list-group .active .fa {display:block;}
 
 
 /* Bugfixes */

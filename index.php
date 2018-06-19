@@ -56,7 +56,8 @@ class Tab
 	{
 		echo '<ul class="list-group">';
 		foreach(self::$tabs as $tab) {
-			echo "<li class='list-group-item'><a href='?tab={$tab['id']}'>{$tab['title']}</a></li>";
+			$theme = (isset($_GET['theme']) AND !empty($_GET['theme']))? $_GET['theme']: 'flatly';
+			echo "<li class='list-group-item'><a href='?tab={$tab['id']}&theme={$theme}'>{$tab['title']}</a></li>";
 		}
 		echo '</ul>';
 	}
@@ -122,149 +123,211 @@ Route::get('/login', function() { ?>
 
 Route::get('', function() {
 	Tab::add('Form', function() { ?>
-	<div class="panel panel-default">
-		<div class="panel-heading">Checks</div>
-		<div class="panel-body">
-			<div class="row">
-				<div class="col-xs-3">
-					<label>
-						<input type="checkbox" class="wpska-check">
-						<span class="wpska-check-0">[ ] Vazio</span>
-						<span class="wpska-check-1">[x] Selecionado</span>
-					</label>
-				</div>
 
-				<div class="col-xs-3">
-					<label>
-						<input type="checkbox" class="wpska-check">
-						<span class="wpska-check-0"><i class="fa fa-fw fa-circle-o"></i> Vazio</span>
-						<span class="wpska-check-1"><i class="fa fa-fw fa-circle"></i> Selecionado</span>
-					</label>
-				</div>
-
-				<div class="col-xs-3">
-					<label>
-						<input type="checkbox" class="wpska-check">
-						<span class="wpska-check-0"><i class="fa fa-fw fa-square-o"></i> Vazio</span>
-						<span class="wpska-check-1"><i class="fa fa-fw fa-square"></i> Selecionado</span>
-					</label>
-				</div>
-
-				<div class="col-xs-3">
-					<label>
-						<input type="checkbox" class="wpska-check">
-						<span class="wpska-check-0"><i class="fa fa-fw fa-square-o"></i> Vazio</span>
-						<span class="wpska-check-1"><i class="fa fa-fw fa-check-square-o"></i> Selecionado</span>
-					</label>
-				</div>
-
-				<div class="col-xs-3">
-					<label>
-						<input type="radio" name="aaa" value="1" class="wpska-check">
-						<span class="wpska-check-0">[ ] Vazio</span>
-						<span class="wpska-check-1">[x] Selecionado</span>
-					</label>
-				</div>
-
-				<div class="col-xs-3">
-					<label>
-						<input type="radio" name="aaa" value="2" class="wpska-check">
-						<span class="wpska-check-0"><i class="fa fa-fw fa-circle-o"></i> Vazio</span>
-						<span class="wpska-check-1"><i class="fa fa-fw fa-circle"></i> Selecionado</span>
-					</label>
-				</div>
-
-				<div class="col-xs-3">
-					<label>
-						<input type="radio" name="aaa" value="3" class="wpska-check">
-						<span class="wpska-check-0"><i class="fa fa-fw fa-square-o"></i> Vazio</span>
-						<span class="wpska-check-1"><i class="fa fa-fw fa-square"></i> Selecionado</span>
-					</label>
-				</div>
-
-				<div class="col-xs-3">
-					<label>
-						<input type="radio" name="aaa" value="4" class="wpska-check">
-						<span class="wpska-check-0"><i class="fa fa-fw fa-square-o"></i> Vazio</span>
-						<span class="wpska-check-1"><i class="fa fa-fw fa-check-square-o"></i> Selecionado</span>
-					</label>
-				</div>
-			</div>
-		</div>
-	</div>
-
-	<div class="panel panel-default">
-		<div class="panel-heading">Wpska select</div>
-		<div class="panel-body">
-			<div class="row">
-				<div class="col-sm-6 form-group">
-					<label>Opção única</label>
-					<div class="wpska-select">
-						<input type="text" class="form-control">
-						<div class="list-group">
-							<label class="list-group-item">
-								<input type="radio" name="bbb" value="Aaa" placeholder="Aaa">
-								<div>
-									<strong>Aaa</strong><br>
-									<small class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Perferendis, assumenda ipsum sunt officia at.</small>
-								</div>
-							</label>
-
-							<label class="list-group-item">
-								<input type="radio" name="bbb" value="Bbb" placeholder="Bbb">
-								<div>
-									<strong>Bbb</strong><br>
-									<small class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Magnam atque doloribus recusandae quam adipisci.</small>
-								</div>
-							</label>
-						</div>
+	<div id="app-form">
+		<div class="panel panel-default">
+			<div class="panel-heading">Checks</div>
+			<div class="panel-body">
+				<div class="row">
+					<div class="col-xs-3">
+						<label>
+							<input type="checkbox" class="wpska-check" v-model="form.check1">
+							<span class="wpska-check-0">[ ] Vazio</span>
+							<span class="wpska-check-1">[x] Selecionado</span>
+						</label>
 					</div>
-				</div>
 
-				<div class="col-sm-6 form-group">
-					<label>Opções múltiplas</label>
-					<div class="wpska-select">
-						<input type="text" class="form-control">
-						<div class="list-group">
-							<label class="list-group-item">
-								<input type="checkbox" placeholder="Aaa">
-								<div>
-									<strong>Aaa</strong><br>
-									<small class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Perferendis, assumenda ipsum sunt officia at.</small>
-								</div>
-							</label>
+					<div class="col-xs-3">
+						<label>
+							<input type="checkbox" class="wpska-check" v-model="form.check2">
+							<span class="wpska-check-0"><i class="fa fa-fw fa-circle-o"></i> Vazio</span>
+							<span class="wpska-check-1"><i class="fa fa-fw fa-circle"></i> Selecionado</span>
+						</label>
+					</div>
 
-							<label class="list-group-item">
-								<input type="checkbox" placeholder="Bbb">
-								<div>
-									<strong>Bbb</strong><br>
-									<small class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Magnam atque doloribus recusandae quam adipisci.</small>
-								</div>
-							</label>
-						</div>
+					<div class="col-xs-3">
+						<label>
+							<input type="checkbox" class="wpska-check" v-model="form.check3">
+							<span class="wpska-check-0"><i class="fa fa-fw fa-square-o"></i> Vazio</span>
+							<span class="wpska-check-1"><i class="fa fa-fw fa-square"></i> Selecionado</span>
+						</label>
+					</div>
+
+					<div class="col-xs-3">
+						<label>
+							<input type="checkbox" class="wpska-check" v-model="form.check4">
+							<span class="wpska-check-0"><i class="fa fa-fw fa-square-o"></i> Vazio</span>
+							<span class="wpska-check-1"><i class="fa fa-fw fa-check-square-o"></i> Selecionado</span>
+						</label>
+					</div>
+
+					<div class="col-xs-3">
+						<label>
+							<input type="radio" name="aaa" value="1" class="wpska-check" v-model="form.radio">
+							<span class="wpska-check-0">[ ] Vazio</span>
+							<span class="wpska-check-1">[x] Selecionado</span>
+						</label>
+					</div>
+
+					<div class="col-xs-3">
+						<label>
+							<input type="radio" name="aaa" value="2" class="wpska-check" v-model="form.radio">
+							<span class="wpska-check-0"><i class="fa fa-fw fa-circle-o"></i> Vazio</span>
+							<span class="wpska-check-1"><i class="fa fa-fw fa-circle"></i> Selecionado</span>
+						</label>
+					</div>
+
+					<div class="col-xs-3">
+						<label>
+							<input type="radio" name="aaa" value="3" class="wpska-check" v-model="form.radio">
+							<span class="wpska-check-0"><i class="fa fa-fw fa-square-o"></i> Vazio</span>
+							<span class="wpska-check-1"><i class="fa fa-fw fa-square"></i> Selecionado</span>
+						</label>
+					</div>
+
+					<div class="col-xs-3">
+						<label>
+							<input type="radio" name="aaa" value="4" class="wpska-check" v-model="form.radio">
+							<span class="wpska-check-0"><i class="fa fa-fw fa-square-o"></i> Vazio</span>
+							<span class="wpska-check-1"><i class="fa fa-fw fa-check-square-o"></i> Selecionado</span>
+						</label>
 					</div>
 				</div>
 			</div>
 		</div>
-	</div>
 
+		<div class="panel panel-default">
+			<div class="panel-heading">Wpska select</div>
+			<div class="panel-body">
+				<div class="row">
+					<div class="col-xs-3">
+						<select class="form-control wpska-select" v-model="form.select1">
+							<option value="">Selecione</option>
+							<option value="mg">Minas Gerais</option>
+							<option value="rj">Rio de Janeiro</option>
+							<option value="sp">São Paulo</option>
+						</select>
+					</div>
 
-	<div class="panel panel-default">
-		<div class="panel-heading">Masks</div>
-		<div class="panel-body">
-			<div class="row">
-				<div class="form-group col-xs-6">
-					<label>CPF</label>
-					<input type="text" class="form-control" data-mask="999.999.999-99">
-				</div>
+					<div class="col-xs-3">
+						<select class="form-control wpska-select" v-model="form.select1">
+							<option value="">Selecione</option>
+							<option value="mg">Minas Gerais</option>
+							<option value="rj">Rio de Janeiro</option>
+							<option value="sp">São Paulo</option>
+						</select>
+					</div>
 
-				<div class="form-group col-xs-6">
-					<label>Phone</label>
-					<input type="text" class="form-control" data-mask="(99) 99999-9999">
+					<div class="col-xs-3">
+						<select class="form-control wpska-select" multiple v-model="form.select2">
+							<option value="mg" selected data-content='<strong>Minas Gerais</strong><br><small class="text-muted">Minas Gerais dá leite</small>'>Minas Gerais</option>
+							<option value="rj" selected data-content='<strong>Rio de Janeiro</strong><br><small class="text-muted">No Rio, tem a Vila Isabel, que dá samba.</small>'>Rio de Janeiro</option>
+							<option value="sp" data-content='<strong>São Paulo</strong><br><small class="text-muted">São Paulo é o estado que dá café.</small>'>São Paulo</option>
+						</select>
+					</div>
+
+					<div class="col-xs-3">
+						<select class="form-control wpska-select" multiple v-model="form.select2">
+							<option value="mg" selected data-content='<strong>Minas Gerais</strong><br><small class="text-muted">Minas Gerais dá leite</small>'>Minas Gerais</option>
+							<option value="rj" selected data-content='<strong>Rio de Janeiro</strong><br><small class="text-muted">No Rio, tem a Vila Isabel, que dá samba.</small>'>Rio de Janeiro</option>
+							<option value="sp" data-content='<strong>São Paulo</strong><br><small class="text-muted">São Paulo é o estado que dá café.</small>'>São Paulo</option>
+						</select>
+					</div>
+
+					<div class="col-xs-3"><br>
+						<select class="wpska-select" v-model="form.select3">
+							<optgroup label="Cores">
+								<option value="#ff0000">Vermelho</option>
+								<option value="#00ff00">Verde</option>
+								<option value="#0000ff">Azul</option>
+							</optgroup>
+							<optgroup label="Frutas">
+								<option value="banana">Banana</option>
+								<option value="goiaba">Goiaba</option>
+								<option value="carambola">Carambola</option>
+							</optgroup>
+						</select>
+					</div>
+
+					<div class="col-xs-3"><br>
+						<select class="wpska-select" v-model="form.select3">
+							<optgroup label="Cores">
+								<option value="#ff0000">Vermelho</option>
+								<option value="#00ff00">Verde</option>
+								<option value="#0000ff">Azul</option>
+							</optgroup>
+							<optgroup label="Frutas">
+								<option value="banana">Banana</option>
+								<option value="goiaba">Goiaba</option>
+								<option value="carambola">Carambola</option>
+							</optgroup>
+						</select>
+					</div>
+
+					<div class="col-xs-3"><br>
+						<select class="wpska-select" multiple v-model="form.select4">
+							<optgroup label="Cores">
+								<option value="#ff0000">Vermelho</option>
+								<option value="#00ff00">Verde</option>
+								<option value="#0000ff">Azul</option>
+							</optgroup>
+							<optgroup label="Frutas">
+								<option value="banana">Banana</option>
+								<option value="goiaba">Goiaba</option>
+								<option value="carambola">Carambola</option>
+							</optgroup>
+						</select>
+					</div>
+
+					<div class="col-xs-3"><br>
+						<select class="wpska-select" multiple v-model="form.select4">
+							<optgroup label="Cores">
+								<option value="#ff0000">Vermelho</option>
+								<option value="#00ff00">Verde</option>
+								<option value="#0000ff">Azul</option>
+							</optgroup>
+							<optgroup label="Frutas">
+								<option value="banana">Banana</option>
+								<option value="goiaba">Goiaba</option>
+								<option value="carambola">Carambola</option>
+							</optgroup>
+						</select>
+					</div>
 				</div>
 			</div>
 		</div>
+
+
+		<div class="panel panel-default">
+			<div class="panel-heading">Masks</div>
+			<div class="panel-body">
+				<div class="row">
+					<div class="form-group col-xs-6">
+						<label>CPF</label>
+						<input type="text" class="form-control" data-mask="999.999.999-99">
+					</div>
+
+					<div class="form-group col-xs-6">
+						<label>Phone</label>
+						<input type="text" class="form-control" data-mask="(99) 99999-9999">
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<pre>{{ $data }}</pre>
 	</div>
+
+	<script>
+	window.wpskaInitForm = function() {
+		new Vue2({
+			el: "#app-form",
+			data: {
+				form: {},
+			},
+		});
+	};
+	</script>
 	<?php });
 
 
@@ -621,6 +684,32 @@ Route::get('', function() {
 	<div class="row">
 		<div class="col-xs-3">
 			<?php Tab::menu(); ?>
+
+			<?php $boots = array(
+				'' => 'Nenhum',
+				'cerulean' => 'Cerulean',
+				'cosmo' => 'Cosmo',
+				'cyborg' => 'Cyborg',
+				'darkly' => 'Darkly',
+				'flatly' => 'Flatly',
+				'journal' => 'Journal',
+				'lumen' => 'Lumen',
+				'paper' => 'Paper',
+				'readable' => 'Readable',
+				'sandstone' => 'Sandstone',
+				'simplex' => 'Simplex',
+				'slate' => 'Slate',
+				'spacelab' => 'Spacelab',
+				'superhero' => 'Superhero',
+				'united' => 'United',
+				'yeti' => 'Yeti',
+			); ?>
+
+			<select class="form-control wpska-select" onchange="location.href = './?tab=<?php echo $_GET['tab']; ?>&theme='+ $(this).val();">
+				<?php foreach($boots as $boot=>$name): ?>
+				<option value="<?php echo $boot; ?>" <?php echo (isset($_GET['theme']) AND $_GET['theme']==$boot)? 'selected': null; ?> ><?php echo $name; ?></option>
+				<?php endforeach; ?>
+			</select>
 		</div>
 		<div class="col-xs-9">
 			<?php Tab::render(); ?>
@@ -651,7 +740,8 @@ Route::get('', function() {
 	<base href="http://projetos.jsiqueira.com/git/wpska/">
 	<script src="./wpska.js"></script>
 </head>
-<body data-bootswatch="flatly">
+<?php $theme = (isset($_GET['theme']) AND !empty($_GET['theme']))? $_GET['theme']: 'flatly'; ?>
+<body data-bootswatch="<?php echo $theme; ?>">
 	
 	<!-- Loading -->
 	<div class="wpska-loading" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#fff; z-index:99;">
