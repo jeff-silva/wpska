@@ -127,7 +127,9 @@ window.wpska = window.wpska||(function() {
 		// data-slick
 		$("[data-slick]").wpskaLoad(function() {
 			$("[data-slick]").each(function() {
-				var params = $(this).wpskaParams("data-slick", {});
+				var params = $(this).wpskaParams("data-slick", {
+					arrows: false,
+				});
 				$(this).slick(params);
 			});
 		}, [
