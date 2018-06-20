@@ -30,6 +30,7 @@ window.wpska = window.wpska||(function() {
 
 	// Init all
 	this.init = function() {
+		var $ = jQuery;
 	
 		// jQuery basic plugins
 		(function($) {
@@ -66,43 +67,36 @@ window.wpska = window.wpska||(function() {
 				defs = (typeof defs=="object")? defs: {};
 				item._id = item._id||this._id();
 				for(var i in defs) {if (typeof item[i]=="undefined") item[i]=defs[i]; }
-				for(var i in item) { item[i] = item[i].replace(/\{id\}/, item._id); }
+				for(var i in item) { item[i] = (item[i]||"").replace(/\{id\}/, item._id); }
 				return item;
 			};
 
-			opts.methods._add = function(parent, keyname, item, params) {
+			opts.methods._add = function(items, item, params) {
 				params = (typeof params=="object")? params: {};
 				params.unique = (typeof params.unique=="undefined")? false: params.unique;
 				params.prepend = (typeof params.prepend=="undefined")? false: params.prepend;
 
-				item = (typeof item=="object")? item: {};
-				item._id = this._id();
-
-				parent = parent||this;
-				parent[keyname] = (typeof parent[keyname]=="object")? parent[keyname]: [];
-
 				if (params.unique) {
-					for(var i in parent[keyname]) {
-						if (parent[keyname][i]._id==item._id) {
+					for(var i in items) {
+						if (items[i]==item) {
 							return false;
 						}
 					}
 				}
 
-				params.prepend? parent[keyname].unshift(item): parent[keyname].push(item);
-				Vue.set(parent, keyname, parent[keyname]);
+				params.prepend? items.unshift(item): items.push(item);
 			};
 
-			opts.methods._append = function(parent, keyname, item, params) {
+			opts.methods._append = function(items, item, params) {
 				params = (typeof params=="object")? params: {};
 				params.prepend = false;
-				this._add(parent, keyname, item, params);
+				this._add(items, item, params);
 			};
 
-			opts.methods._prepend = function(parent, keyname, item, params) {
+			opts.methods._prepend = function(items, item, params) {
 				params = (typeof params=="object")? params: {};
 				params.prepend = true;
-				this._add(parent, keyname, item, params);
+				this._add(items, item, params);
 			};
 
 			opts.methods._remove = function(items, item, confirmStr) {
@@ -111,21 +105,19 @@ window.wpska = window.wpska||(function() {
 				return items.splice(index, 1);
 			};
 
-			opts.methods._exists = function(parent, item) {
-				parent = parent||this;
-				for(var i in parent) {
-					if (parent[i]._id==item._id) {
+			opts.methods._exists = function(items, item) {
+				for(var i in items) {
+					if (items[i]==item) {
 						return true;
 					}
 				}
 				return false;
 			};
 
-			opts.methods._toggle = function(parent, keyname, item, params) {
-				parent = parent||this;
-				this._exists((parent[keyname]||[]), item)?
-				this._remove(parent, keyname, item):
-				this._add(parent, keyname, item, params);
+			opts.methods._toggle = function(items, item) {
+				this._exists(items, item)?
+					this._remove(items, item):
+					this._add(items, item);
 			};
 
 			return new Vue(opts);
@@ -267,6 +259,7 @@ window.wpska = window.wpska||(function() {
 
 
 
+		// codemirror
 		$("[data-codemirror]").wpskaLoad(function() {
 			$("[data-codemirror]").each(function() {
 				var target = this;
@@ -302,9 +295,16 @@ window.wpska = window.wpska||(function() {
 		// medium
 		$(document).on("click", "[data-medium]", function() {
 			var $medium = $(this);
+			var params = $medium.wpskaParams("data-medium", {
+				placeholder: false,
+			});
 			$medium.wpskaLoad(function() {
+
+				// medium autolist
+				!function(e,t){"use strict";"object"==typeof module?module.exports=t:"function"==typeof define&&define.amd?define(t):e.AutoList=t}(this,function(e){var t=e.Extension.extend({name:"autolist",init:function(){this.subscribe("editableInput",this.onInput.bind(this))},onInput:function(e){var t=this.base.getSelectedParentElement().textContent;/^\s*1\.\s/.test(t)&&this.base.getExtensionByName("orderedlist")?(this.base.execAction("delete"),this.base.execAction("delete"),this.base.execAction("delete"),this.base.execAction("insertorderedlist")):/^\s*\*\s/.test(t)&&this.base.getExtensionByName("unorderedlist")&&(this.base.execAction("delete"),this.base.execAction("delete"),this.base.execAction("insertunorderedlist"))}});return t}("function"==typeof require?require("medium-editor"):MediumEditor));
+
 				$medium.css({height:"auto"});
-				var editor = new MediumEditor($medium);
+				var editor = new MediumEditor($medium, params);
 			}, [
 				"//cdn.jsdelivr.net/npm/medium-editor@latest/dist/js/medium-editor.min.js",
 				"//cdn.jsdelivr.net/npm/medium-editor@latest/dist/css/medium-editor.min.css",

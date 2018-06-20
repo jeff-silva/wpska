@@ -228,8 +228,8 @@ Route::get('', function() {
 
 												<!-- medium -->
 												<div v-if="input.type=='medium'">
-													<div class="form-control" data-medium="" @keyup="input.value = $event.target.innerHTML;">Aaa</div>
-													<textarea :name="input.name" class="form-control" v-model="input.value"></textarea>
+													<div class="form-control" data-medium="" @click="$event.target.innerHTML=input.value;" @keyup="input.value = $event.target.innerHTML;">{{ input.value }}</div>
+													<!-- <textarea :name="input.name" class="form-control" v-model="input.value"></textarea> -->
 												</div>
 											</div>
 										</div>
@@ -296,30 +296,33 @@ Route::get('', function() {
 
 	Tab::add('Vue2', function() { ?>
 	<div id="app-vue2">
-		<button class="btn btn-default" @click="_itemAdd();">_itemAdd</button>
+		<button class="btn btn-default" @click="_append(items, _item());">_append</button>
+		<button class="btn btn-default" @click="_prepend(items, _item());">_prepend</button>
 		<br><br>
-
+		
 		<div class="row">
 			<div class="col-xs-6">
-				<div class="panel panel-default">
-					<div class="panel-heading">Items</div>
-					<div class="panel-body">
-						<div class="row">
-							<draggable :list="items" :options="{animation:150}">
-								<div class="col-xs-4" v-for="item in items">
+				<draggable :list="items" :options="{animation:150, handle:'img'}">
+					<div class="panel panel-default" v-for="item in items">
+						<div class="panel-body">
+							<div class="row">
+								<div class="col-xs-6">
+									<div class="wpska-cover" style="width:100%; height:100px;" @click="_toggle(false, 'selecteds', item);">
+										<img :src="item.thumb" alt="">
+									</div>
+								</div>
+								<div class="col-xs-6">
+									<div data-medium="" class="form-control"></div>
 									<div style="padding:5px;" :class="{'bg-primary':_exists(selecteds, item)}">
 										<div class="text-right">
-											<a href="javascript:;" class="fa fa-fw fa-remove" @click="_remove(false, 'items', item, null, '.col-xs-3');"></a>
+											<a href="javascript:;" class="fa fa-fw fa-remove" @click="_remove(items, item);"></a>
 										</div>
-										<div class="wpska-cover" style="width:100%; height:100px;" @click="_toggle(false, 'selecteds', item);">
-											<img :src="item.thumb" alt="">
-										</div>
-									</div><br>
+									</div>
 								</div>
-							</draggable>
+							</div>
 						</div>
 					</div>
-				</div>
+				</draggable>
 			</div>
 			<div class="col-xs-6">
 				<div class="panel panel-default">
@@ -356,11 +359,13 @@ Route::get('', function() {
 					return this._default(item, {
 						name: "Item #{id}",
 						thumb: ("https://picsum.photos/200/200?rand="+Math.round(Math.random()*999)),
+						text: null,
 					});
 				},
 				_itemAdd: function(item) {
+					var app=this;
 					item = this._item(item);
-					return this._prepend(this, "items", item);
+					return this._prepend(app.items, item);
 				},
 			},
 		});
@@ -639,11 +644,14 @@ Route::get('', function() {
 				'yeti' => 'Yeti',
 			); ?>
 
-			<select class="form-control wpska-select" onchange="location.href = './?tab=<?php echo $_GET['tab']; ?>&theme='+ $(this).val();">
-				<?php foreach($boots as $boot=>$name): ?>
-				<option value="<?php echo $boot; ?>" <?php echo (isset($_GET['theme']) AND $_GET['theme']==$boot)? 'selected': null; ?> ><?php echo $name; ?></option>
-				<?php endforeach; ?>
-			</select>
+			<div class="wpska-select">
+				<input type="text" class="form-control">
+				<select class="form-control" onchange="location.href = './?tab=<?php echo $_GET['tab']; ?>&theme='+ $(this).val();">
+					<?php foreach($boots as $boot=>$name): ?>
+					<option value="<?php echo $boot; ?>" <?php echo (isset($_GET['theme']) AND $_GET['theme']==$boot)? 'selected': null; ?> ><?php echo $name; ?></option>
+					<?php endforeach; ?>
+				</select>
+			</div>
 		</div>
 		<div class="col-xs-9">
 			<?php Tab::render(); ?>
