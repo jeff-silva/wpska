@@ -124,6 +124,15 @@ window.wpska = window.wpska||(function() {
 		}
 
 
+		// data-vue
+		$("[data-vue]").each(function() {
+			var params = $(this).wpskaParams("data-vue", {
+				el: this,
+			});
+			new Vue2(params);
+		});
+
+
 		// data-slick
 		$("[data-slick]").wpskaLoad(function() {
 			$("[data-slick]").each(function() {
