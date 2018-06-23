@@ -1145,5 +1145,4 @@ foreach(wpska_modules() as $mod) {
 }
 
 new Wpska_Base_Actions();
-new Wpska_Ui();
 endif;
