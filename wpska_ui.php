@@ -346,7 +346,7 @@ class Wpska_Ui
 		$value = array_merge($default, $value);
 
 		?>
-		<div class="wpska-ui-address" id="<?php echo $params['id']; ?>">
+		<div class="wpska-ui-address" id="<?php echo $params['id']; ?>" data-vue="uiAddrInit">
 			<div class="row">
 				<div class="col-sm-6">
 					<div class="input-group">
@@ -367,29 +367,30 @@ class Wpska_Ui
 				<div class="col-sm-4"><input type="text" class="form-control" v-model="value.state" placeholder="Estado"></div>
 				<div class="col-sm-4"><input type="text" class="form-control" v-model="value.country" placeholder="País"></div>
 			</div>
-			<textarea name="<?php echo $params['name']; ?>" style="display:none;">{{ value }}</textarea>
+			<textarea name="<?php echo $params['name']; ?>" style="display:none;" v-if="value">{{ value }}</textarea>
 		</div>
-		<?php wpska_header(); ?>
 		<script>
-		new Vue({
-			el: "#<?php echo $params['id']; ?>",
-			data: function() {
-				var data={loading:false};
-				data.value = <?php echo json_encode($value); ?>;
-				return data;
-			},
-			methods: {
-				_addressSearch: function() {
-					var app=this, $=jQuery, $parent=$("#<?php echo $params['id']; ?>");
-					$parent.css({opacity:.5});
-					var post = {"search":app.value.zipcode};
-					$.post("<?php echo site_url('/wp-json/wpska/v1/address_search'); ?>", post, function(resp) {
-						$parent.css({opacity:1});
-						Vue.set(app, "value", resp);
-					}, "json");
+		var uiAddrInit = function() {
+			return new Vue({
+				el: "#<?php echo $params['id']; ?>",
+				data: function() {
+					var data={loading:false};
+					data.value = <?php echo json_encode($value); ?>;
+					return data;
 				},
-			},
-		});
+				methods: {
+					_addressSearch: function() {
+						var app=this, $=jQuery, $parent=$("#<?php echo $params['id']; ?>");
+						$parent.css({opacity:.5});
+						var post = {"search":app.value.zipcode};
+						$.post("<?php echo site_url('/wp-json/wpska/v1/address_search'); ?>", post, function(resp) {
+							$parent.css({opacity:1});
+							Vue.set(app, "value", resp);
+						}, "json");
+					},
+				},
+			});
+		};
 		</script>
 		<?php
 	}
