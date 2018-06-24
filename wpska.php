@@ -38,8 +38,6 @@ function wpska_base($realpath, $path) {
 
 
 
-=======
->>>>>>> 4ecf8b399bdf4029bf421c64fadb1a4252007e89
 class Wpska_Db
 {
 	public $table;
@@ -389,6 +387,185 @@ class Wpska_Api
 		});
 	}
 }
+
+
+
+class Wpska_Posts
+{
+	
+	static $instance=false;
+	static function instance($query, $wpska_query_cache='option')
+	{
+		if (! self::$instance) {
+			self::$instance = new self($query, $wpska_query_cache);
+		}
+		return self::$instance;
+	}
+
+
+	public function __construct($query, $wpska_query_cache='option')
+	{
+		if (is_object($query) AND 'WP_Query'==get_class($query)) {
+			foreach($query as $key=>$val) {
+				$this->{$key} = $val;
+			}
+			return;
+		}
+
+		if (!$query OR is_string($query)) {
+			parse_str($query, $query);
+		}
+
+		if ($wpska_query_cache=='option') {
+			$wpska_query_cache = get_option('wpska_query_cache', 3600);
+		}
+
+		$result = array();
+		if ($wpska_query_cache>0) {
+			$cache_key = sprintf('wpska_query_cache_%s_%s', md5(serialize($query)), $wpska_query_cache);
+			$result = get_transient($cache_key);
+			if (! $result) {
+				$result = new WP_Query($query);
+				set_transient($cache_key, $result, $wpska_query_cache);
+			}
+		}
+		else {
+			$result = new WP_Query($query);
+		}
+
+		foreach($result as $key=>$val) {
+			$this->{$key} = $val;
+		}
+	}
+
+
+
+	public function taxonomies($taxonomies, $args=array())
+	{
+		$return = array();
+		$taxonomies = is_array($taxonomies)? $taxonomies: array($taxonomies);
+		foreach($taxonomies as $taxonomy) {
+			foreach($this->posts as $post) {
+				$post->tags = array();
+				foreach(wp_get_post_terms($post->ID, $taxonomy, $args) as $term) {
+					$return[ $term->term_id ] = $term;
+					$post->tags[ $term->term_id ] = $term;
+				}
+			}
+		}
+		return $return;
+	}
+
+
+
+	public function content($callback)
+	{
+		global $post;
+		if (!empty($this->posts) AND is_callable($callback)) {
+			foreach($this->posts as $i=>$_post) {
+				$post = $_post;
+				setup_postdata($_post);
+				call_user_func($callback, $post, $i);
+			}
+			wp_reset_postdata();
+		}
+		return $this;
+	}
+
+
+	public function loop($callback)
+	{
+		return $this->content($callback);
+	}
+
+
+	public function notFound($callback)
+	{
+		if (empty($this->posts) AND is_callable($callback)) {
+			call_user_func($callback);
+		}
+		return $this;
+	}
+
+
+	public function pagination()
+	{
+		$big = 999999999;
+		$pages = paginate_links( array(
+				'base' => str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) ),
+				'format' => '?paged=%#%',
+				'current' => max( 1, get_query_var('paged') ),
+				'total' => $this->query->max_num_pages,
+				'type'  => 'array',
+				'prev_next'   => true,
+				'prev_text'    => __('«'),
+				'next_text'    => __('»'),
+			)
+		);
+
+		if( is_array( $pages ) ) {
+			$paged = ( get_query_var('paged') == 0 ) ? 1 : get_query_var('paged');
+
+			$pagination = '<ul class="pagination">';
+
+			foreach ( $pages as $page ) {
+				$pagination .= "<li>$page</li>";
+			}
+
+			$pagination .= '</ul>';
+
+			return $pagination;
+		}
+	}
+
+
+	public function paginate()
+	{
+		return $this->pagination();
+	}
+}
+
+
+
+
+class Wpska_Post
+{
+	
+	public $post=false;
+	public function __construct($_post=null)
+	{
+		global $post;
+		$this->post = $post;
+		if ($_post) $this->post = $_post;
+	}
+
+
+	public function content($callback)
+	{
+		global $post;
+		if (is_callable($callback)) {
+			$post = $this->post;
+			setup_postdata($this->post);
+			call_user_func($callback, $post);
+			wp_reset_postdata();
+		}
+	}
+}
+
+
+
+function wpska_header($local=false) {
+	global $wpska_header_loaded;
+	if ($wpska_header_loaded) return null;
+	$url = 'https://wpska.herokuapp.com/wpska.js';
+	if ($local) {
+		$url = realpath(__DIR__) . '/wpska.js';
+		$url = str_replace(realpath($_SERVER['DOCUMENT_ROOT']), "//{$_SERVER['HTTP_HOST']}", $url);
+	}
+	echo "<script src='{$url}'></script>";
+	$wpska_header_loaded=true;
+}
+
 
 
 
