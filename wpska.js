@@ -15,8 +15,13 @@ window.wpska = window.wpska||(function() {
 	this.tests = [
 		{test:(window.jQuery||false), files:['https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js']},
 		{test:((window.jQuery||false) && (window.jQuery.fn||false) && (window.jQuery.fn.modal||false)), files:['https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js', 'https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css']},
-		{test:(window.Vue||false), files:['https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.16/vue.min.js', 'https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.6.0/Sortable.min.js', 'https://cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/15.0.0/vuedraggable.min.js']},
-		{test:false, files:['https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css', (__dir+'/wpska.css')]},
+		{test:(window.Vue||false), files:['https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.16/vue.min.js']},
+		{test:false, files:[
+			'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css',
+			'https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.6.0/Sortable.min.js',
+			'https://cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/15.0.0/vuedraggable.min.js',
+			(__dir+'/wpska.css'),
+		]},
 	];
 
 	this.files = [];
@@ -341,6 +346,8 @@ window.wpska = window.wpska||(function() {
 				window[i].call(this);
 			}
 		}
+
+		document.dispatchEvent(new Event("wpska"));
 	};
 
 	head.load(this.files, this.init);

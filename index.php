@@ -241,9 +241,17 @@ Route::get('', function() {
 				</div>
 			</div>
 		</div>
-
 		<pre>{{ $data }}</pre>
 	</div>
+
+
+	<link rel="import" href="./components/wpska-address/index.php">
+	<wpska-address value='{route:"aaa"}' map="1" id="wpskaaddress01"></wpska-address>
+	<button type="button" onclick="alert( JSON.stringify(wpskaaddress01.getValue(), 2, ' ') );">Value</button>
+	
+	<link rel="import" href="./components/wpska-posts/index.php">
+	<wpska-posts></wpska-posts>
+
 
 	<script>
 	window.wpskaInitForm = function() {

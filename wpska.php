@@ -30,6 +30,12 @@ function wpska_auth($pass=null) {
 }
 
 
+/* wpska_base(__DIR__, 'filename.php'); */
+function wpska_base($realpath, $path) {
+	$base = str_replace(realpath($_SERVER['DOCUMENT_ROOT']), "//{$_SERVER['HTTP_HOST']}", $realpath);
+	return str_replace("\\", '/', $base) .'/'. ltrim($path, '/');
+}
+
 
 
 class Wpska_Db
@@ -644,8 +650,98 @@ function wpska_dependencies() {
 }
 
 
+class Wpska_Rest
+{
+	static function address($search=null)
+	{
+		$return = array(
+			'zip_code' => '',
+			'route' => '',
+			'number' => '',
+			'complement' => '',
+			'district' => '',
+			'city' => '',
+			'state' => '',
+			'state_short' => '',
+			'country' => '',
+			'country_short' => '',
+			'lat' => '',
+			'lng' => '',
+			'formatted_address' => '',
+			'embed' => '',
+		);
 
-function wpska_keys($keyname=null) {
+		$search = str_replace(' ', '%20', $search);
+
+		if (! function_exists('google_places_search')) {
+			function google_places_search($path=null) {
+				$parse = parse_url($path);
+				$parse = array_merge(array('path'=>null, 'query'=>null), $parse);
+				parse_str($parse['query'], $parse['query']);
+				$parse['query'] = is_array($parse['query'])? $parse['query']: array();
+				$parse['query']['key'] = wpska_settings('google_key');
+				$parse['query']['language'] = 'pt-BR';
+				$parse['query'] = http_build_query($parse['query']);
+				$path = trim("{$parse['path']}?{$parse['query']}", '/');
+				$data = wpska_content($url = "https://maps.googleapis.com/maps/api/place/{$path}");
+				$data = json_decode($data, true);
+				$data['url'] = $url;
+				return $data;
+			}
+		}
+		
+
+		$resp1 = wpska_content("https://viacep.com.br/ws/{$search}/json/");
+		$resp1 = json_decode($resp1, true);
+		if (is_array($resp1) AND isset($resp1['logradouro'])) {
+			$search = "{$search}+{$resp1['logradouro']}+{$resp1['bairro']}+{$resp1['localidade']}";
+			$return['zip_code'] = $resp1['cep'];
+			$return['route'] = $resp1['logradouro'];
+			$return['district'] = $resp1['bairro'];
+			$return['city'] = $resp1['localidade'];
+			$return['state'] = $resp1['uf'];
+			$return['state_short'] = $resp1['uf'];
+		}
+
+		$resp2 = google_places_search("/textsearch/json?query={$search}");
+		if (isset($resp2['results'][0]['place_id'])) {
+			$resp2 = google_places_search("/details/json?placeid={$resp2['results'][0]['place_id']}");
+			if (isset($resp2['result']['address_components'])) {
+				foreach($resp2['result']['address_components'] as $comp) {
+					if ($comp['types'][0]=='route') $return['route']=$comp['long_name'];
+					else if ($comp['types'][0]=='street_number') $return['number']=$comp['long_name'];
+					else if ($comp['types'][0]=='postal_code') $return['zip_code']=$comp['long_name'];
+					else if ($comp['types'][0]=='sublocality_level_1') $return['district']=$comp['long_name'];
+					else if ($comp['types'][0]=='administrative_area_level_2') $return['city']=$comp['long_name'];
+					else if ($comp['types'][0]=='administrative_area_level_1') {
+						$return['state']=$comp['long_name'];
+						$return['state_short']=$comp['short_name'];
+					}
+					else if ($comp['types'][0]=='country') {
+						$return['country']=$comp['long_name'];
+						$return['country_short']=$comp['short_name'];
+					}
+				}
+				$return['lat'] = $resp2['result']['geometry']['location']['lat'];
+				$return['lng'] = $resp2['result']['geometry']['location']['lng'];
+				$return['formatted_address'] = $resp2['result']['formatted_address'];
+			}
+		}
+
+		if ($return['lat'] AND $return['lng']) {
+			$google_key = wpska_settings('google_key');
+			$zoom = 17;
+			$return['embed'] = "https://www.google.com/maps/embed/v1/view?key={$google_key}&center={$return['lat']},{$return['lng']}&zoom={$zoom}";
+			$return['image'] = "https://maps.googleapis.com/maps/api/staticmap?center={$return['lat']},{$return['lng']}&zoom={$zoom}&scale=1&size=600x300&maptype=roadmap&key={$$google_key}&format=jpg&visual_refresh=true";
+		}
+
+		return $return;
+	}
+}
+
+
+
+function wpska_settings($keyname=null) {
 	$keys = array(
 		'google_key' => 'AIzaSyB-Li2nMHdkyiJVLubSOtxZZEqGkmxRpvs',
 	);
