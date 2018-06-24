@@ -18,26 +18,6 @@ if (! function_exists('dd')) {
 
 
 
-function wpska_auth($pass=null) {
-	$_SESSION['wpska'] = isset($_SESSION['wpska'])? $_SESSION['wpska']: array();
-	$_SESSION['wpska']['auth'] = isset($_SESSION['wpska']['auth'])? $_SESSION['wpska']['auth']: false;
-	if ($pass) {
-		$content = wpska_content('https://raw.githubusercontent.com/jeff-silva/wpska/master/.pass');
-		$content = array_filter(explode("\n", $content), 'strlen');
-		$_SESSION['wpska']['auth'] = in_array(md5($pass), $content);
-	}
-	return $_SESSION['wpska']['auth'];
-}
-
-
-/* wpska_base(__DIR__, 'filename.php'); */
-function wpska_base($realpath, $path) {
-	$base = str_replace(realpath($_SERVER['DOCUMENT_ROOT']), "//{$_SERVER['HTTP_HOST']}", $realpath);
-	return str_replace("\\", '/', $base) .'/'. ltrim($path, '/');
-}
-
-
-
 class Wpska_Db
 {
 	public $table;
@@ -766,6 +746,14 @@ function wpska_auth($pass=null) {
 		$_SESSION['wpska']['auth'] = in_array(md5($pass), $content);
 	}
 	return $_SESSION['wpska']['auth'];
+}
+
+
+
+/* wpska_base(__DIR__, 'filename.php'); */
+function wpska_base($realpath, $path) {
+	$base = str_replace(realpath($_SERVER['DOCUMENT_ROOT']), "//{$_SERVER['HTTP_HOST']}", $realpath);
+	return str_replace("\\", '/', $base) .'/'. ltrim($path, '/');
 }
 
 
