@@ -18,7 +18,6 @@ if (! function_exists('dd')) {
 
 
 
-<<<<<<< HEAD
 function wpska_auth($pass=null) {
 	$_SESSION['wpska'] = isset($_SESSION['wpska'])? $_SESSION['wpska']: array();
 	$_SESSION['wpska']['auth'] = isset($_SESSION['wpska']['auth'])? $_SESSION['wpska']['auth']: false;
