@@ -750,8 +750,9 @@ function wpska_auth($pass=null) {
 
 
 
-/* wpska_base(__DIR__, 'filename.php'); */
-function wpska_base($realpath, $path) {
+/* wpska_base('/filename.php', __DIR__); */
+function wpska_base($path=null, $realpath=null) {
+	$realpath = $realpath? $realpath: __DIR__;
 	$base = str_replace(realpath($_SERVER['DOCUMENT_ROOT']), "//{$_SERVER['HTTP_HOST']}", $realpath);
 	return str_replace("\\", '/', $base) .'/'. ltrim($path, '/');
 }

@@ -246,8 +246,8 @@ Route::get('', function() {
 
 
 	<link rel="import" href="./components/wpska-address/index.php">
-	<wpska-address value='{route:"aaa"}' map="1" id="wpskaaddress01"></wpska-address>
-	<button type="button" onclick="alert( JSON.stringify(wpskaaddress01.getValue(), 2, ' ') );">Value</button>
+	<wpska-address value='{route:"aaa"}' map="1" id="wpskaaddress01" onchanged="console.log(this.vuelValue());"></wpska-address>
+	<button type="button" onclick="alert( JSON.stringify(wpskaaddress01.vuelValue(), 2, ' ') );">Value</button>
 	
 	<link rel="import" href="./components/wpska-posts/index.php">
 	<wpska-posts></wpska-posts>

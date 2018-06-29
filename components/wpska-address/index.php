@@ -4,7 +4,7 @@
 <script src="../vuel.js"></script>
 
 <template id="wpska-address">
-	<div>
+	<div style="position:relative;">
 		<div class="row">
 			<div class="col-sm-12">
 				<div class="row"><div class="col-sm-6">
@@ -30,6 +30,9 @@
 				<iframe :src="address.embed" style="width:100%; height:200px; border:none;"></iframe>
 			</div>
 		</div>
+		<div style="position:absolute; top:0px; left:0px; width:100%; height:100%; background:#ffffff77; z-index:9; text-align:center;" v-if="loading!=0">
+			<small class="text-muted" style="position:absolute; top:50%;">{{ loading }}</small>
+		</div>
 	</div>
 </template>
 
@@ -40,6 +43,7 @@ Vuel("wpska-address", {
 		value: "",
 		map: "0",
 		search: "",
+		loading: "0",
 		address: {
 			route: "",
 			number: "",
@@ -61,7 +65,9 @@ Vuel("wpska-address", {
 	methods: {
 		_search: function() {
 			var app=this, $=jQuery;
-			$.get("<?php echo wpska_base(__DIR__, '/search.php'); ?>", {search:app.search}, function(resp) {
+			app.loading = "Pesquisando...";
+			$.get("<?php echo wpska_base('/search.php', __DIR__); ?>", {search:app.search}, function(resp) {
+				app.loading = "0";
 				Vue.set(app, "search", "");
 				Vue.set(app, "address", resp);
 				Vue.set(app, "value", app.address);
