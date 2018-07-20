@@ -663,6 +663,7 @@ Route::get('', function() {
 		</div>
 		<div class="col-xs-9">
 			<?php Tab::render(); ?>
+			<?php wpska_update(); ?>
 		</div>
 		<div class="col-xs-12 text-right">
 			<br>

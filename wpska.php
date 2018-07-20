@@ -533,6 +533,51 @@ class Wpska_Post
 }
 
 
+function wpska_info() {
+	return array(
+		'version' => '0.0.1',
+	);
+}
+
+
+function wpska_update() {
+
+	$local_composer = __DIR__ . '/composer.json';
+	if (! file_exists($local_composer)) {
+		file_put_contents($local_composer, wpska_content('https://raw.githubusercontent.com/jeff-silva/wpska/master/composer.json'));
+	}
+
+	?>
+	<div>
+		<div class="wpska-version"><small class="text-muted">Carregando... <i class="fa fa-fw fa-spin fa-spinner"></i></small></div>
+		<script>
+		window._wpskaDoUpdate = function() {
+			$(".wpska-version i.fa").attr("class", "fa fa-fw fa-spin fa-spinner");
+			$.post("<?php echo wpska_base('?wpska_update'); ?>", function(resp) {
+				$(".wpska-version i.fa").attr("class", "fa fa-fw fa-refresh");
+				// location.reload();
+			}, "json");
+		};
+		jQuery(document).ready(function($) {
+			$.get("https://raw.githubusercontent.com/jeff-silva/wpska/master/composer.json", function(resp1) {
+				$.get("<?php echo wpska_base('/composer.json'); ?>", function(resp2) {
+					$(".wpska-version").each(function() {
+						resp1.version = resp1.version||"0.0.0";
+						resp2.version = resp2.version||"0.0.0";
+						var text = [];
+						text.push("Versão global: "+resp1.version);
+						text.push("Versão local: "+resp2.version);
+						if (resp1.version != resp2.version) text.push('<a href="javascript:_wpskaDoUpdate();">Update <i class="fa fa-fw fa-refresh"></i></a>');
+						$(this).html(text.join(" | "));
+					});
+				}, "json");
+			}, "json");
+		});
+		</script>
+	</div>
+	<?php
+}
+
 
 function wpska_header($local=false) {
 	global $wpska_header_loaded;
@@ -1040,6 +1085,296 @@ function wpska_thumbnail($post, $default=null) {
 }
 
 
+function wpska_socials($params=null) {
+
+	if (!is_array($params)) parse_str($params, $params);
+	$params = is_array($params)? $params: array();
+	$params = array_merge(array(
+		'share_url' => '',
+		'share_title' => '',
+		'share_text' => '',
+		'share_img' => '',
+		'share_language' => '',
+		'share_via' => '',
+		'share_hashtag' => '',
+		'share_provider' => '',
+		'share_email' => '',
+		'only' => '',
+		'ignore' => '',
+		'output' => 'array', // array|list
+	), $params);
+	$params['only'] = is_array($params['only'])? $params['only']: preg_split('/[^0-9A-Za-z]/', $params['only']);
+	$params['only'] = array_filter($params['only'], 'strlen');
+	$params['ignore'] = is_array($params['ignore'])? $params['ignore']: preg_split('/[^0-9A-Za-z]/', $params['ignore']);
+	$params['ignore'] = array_filter($params['ignore'], 'strlen');
+
+	$default = array(
+		'social_id'=>'',
+		'social_name'=>'',
+		'social_url'=>'',
+		'social_color'=>'',
+		'social_fa'=>'',
+		'social_share'=>'',
+	);
+
+	$socials = array(
+		'facebook' => array(
+			'social_name'=>'Facebook',
+			'social_url'=>'https://facebook.com',
+			'social_color'=>'#3b5998',
+			'social_fa'=>'fa fa-fw fa-facebook',
+			'social_share'=>'https://www.facebook.com/sharer.php?u={share_url}',
+		),
+		'twitter' => array(
+			'social_name'=>'Twitter',
+			'social_url'=>'https://twitter.com',
+			'social_color'=>'#1da1f2',
+			'social_fa'=>'fa fa-fw fa-twitter',
+			'social_share'=>'https://twitter.com/intent/tweet?url={share_url}&text={share_title}&via={share_via}&hashtags={share_hashtag}',
+		),
+		'youtube' => array(
+			'social_name'=>'Youtube',
+			'social_url'=>'https://youtube.com',
+			'social_color'=>'#ff0000',
+			'social_fa'=>'fa fa-fw fa-youtube',
+		),
+		'instagram' => array(
+			'social_name'=>'Instagram',
+			'social_url'=>'https://instagram.com',
+			'social_color'=>'#4c5fd7',
+			'social_fa'=>'fa fa-fw fa-instagram',
+		),
+		'google' => array(
+			'social_name'=>'Google',
+			'social_url'=>'https://google.com',
+			'social_color'=>'#4285f4',
+			'social_fa'=>'fa fa-fw fa-google',
+		),
+		'pinterest' => array(
+			'social_name'=>'Pinterest',
+			'social_url'=>'https://pinterest.com',
+			'social_color'=>'#bd081c',
+			'social_fa'=>'fa fa-fw fa-pinterest',
+			'social_share'=>'http://pinterest.com/pin/create/link/?url={share_url}',
+		),
+		'googleplus' => array(
+			'social_name'=>'Google+',
+			'social_url'=>'https://googleplus.com',
+			'social_color'=>'#db4437',
+			'social_fa'=>'fa fa-fw fa-googleplus',
+			'social_share'=>'https://plus.google.com/share?url={share_url}&text={share_text}&hl={share_language}',
+		),
+		'linkedin' => array(
+			'social_name'=>'Linked In',
+			'social_url'=>'https://linkedin.com',
+			'social_color'=>'#007bb5',
+			'social_fa'=>'fa fa-fw fa-linkedin',
+			'social_share'=>'https://www.linkedin.com/shareArticle?mini=true&url={share_url}&title={share_title}&summary={share_text}&source={share_provider}',
+		),
+		'vimeo' => array(
+			'social_id'=>'vimeo',
+			'social_url'=>'https://vimeo.com',
+			'social_color'=>'#1ab7ea',
+			'social_fa'=>'fa fa-fw fa-vimeo',
+		),
+		'tumblr' => array(
+			'social_url'=>'https://tumblr.com',
+			'social_name'=>'Tumblr',
+			'social_color'=>'#2c4762',
+			'social_fa'=>'fa fa-fw fa-tumblr',
+			'social_share'=>'https://www.tumblr.com/widgets/share/tool?canonicalUrl={share_url}&title={share_title}&caption={share_text}&tags={share_hashtags}',
+		),
+		'snapchat' => array(
+			'social_url'=>'https://snapchat.com',
+			'social_name'=>'Snapchat',
+			'social_color'=>'#fffc00',
+			'social_fa'=>'fa fa-fw fa-snapchat',
+		),
+		'whatsapp' => array(
+			'social_url'=>'https://whatsapp.com',
+			'social_name'=>'Whatsapp',
+			'social_color'=>'#25d366',
+			'social_fa'=>'fa fa-fw fa-whatsapp',
+		),
+		'foursquare' => array(
+			'social_url'=>'https://foursquare.com',
+			'social_name'=>'Foursquare',
+			'social_color'=>'#f94877',
+			'social_fa'=>'fa fa-fw fa-foursquare',
+		),
+		'swarm' => array(
+			'social_url'=>'https://swarm.com',
+			'social_name'=>'Swarm',
+			'social_color'=>'#ffa633',
+			'social_fa'=>'fa fa-fw fa-swarm',
+		),
+		'medium' => array(
+			'social_url'=>'https://medium.com',
+			'social_name'=>'Medium',
+			'social_color'=>'#02b875',
+			'social_fa'=>'fa fa-fw fa-medium',
+		),
+		'skype' => array(
+			'social_url'=>'https://skype.com',
+			'social_name'=>'Skype',
+			'social_color'=>'#00aff0',
+			'social_fa'=>'fa fa-fw fa-skype',
+			'social_share'=>'https://web.skype.com/share?url={share_url}&text={share_text}',
+		),
+		'android' => array(
+			'social_url'=>'https://android.com',
+			'social_name'=>'Android',
+			'social_color'=>'#a4c639',
+			'social_fa'=>'fa fa-fw fa-android',
+		),
+		'stumbleupon' => array(
+			'social_url'=>'https://stumbleupon.com',
+			'social_name'=>'Stumbleupon',
+			'social_color'=>'#e94826',
+			'social_fa'=>'fa fa-fw fa-stumbleupon',
+			'social_share'=>'http://www.stumbleupon.com/submit?url={share_url}',
+		),
+		'flickr' => array(
+			'social_url'=>'https://flickr.com',
+			'social_name'=>'Flickr',
+			'social_color'=>'#f40083',
+			'social_fa'=>'fa fa-fw fa-flickr',
+		),
+		'yahoo' => array(
+			'social_url'=>'https://yahoo.com',
+			'social_name'=>'Yahoo',
+			'social_color'=>'#430297',
+			'social_fa'=>'fa fa-fw fa-yahoo',
+			'social_share'=>'http://compose.mail.yahoo.com/?to={share_email}&subject={share_title}&body={share_url}',
+		),
+		'soundcloud' => array(
+			'social_url'=>'https://soundcloud.com',
+			'social_name'=>'Soundcloud',
+			'social_color'=>'#ff5500',
+			'social_fa'=>'fa fa-fw fa-soundcloud',
+		),
+		'spotify' => array(
+			'social_url'=>'https://spotify.com',
+			'social_name'=>'Spotify',
+			'social_color'=>'#1ed760',
+			'social_fa'=>'fa fa-fw fa-spotify',
+		),
+		'dribbble' => array(
+			'social_url'=>'https://dribbble.com',
+			'social_name'=>'Dribbble',
+			'social_color'=>'#ea4c89',
+			'social_fa'=>'fa fa-fw fa-dribbble',
+		),
+		'slack' => array(
+			'social_url'=>'https://slack.com',
+			'social_name'=>'Slack',
+			'social_color'=>'#4d394b',
+			'social_fa'=>'fa fa-fw fa-slack',
+		),
+		'reddit' => array(
+			'social_url'=>'https://reddit.com',
+			'social_name'=>'Reddit',
+			'social_color'=>'#ff5700',
+			'social_fa'=>'fa fa-fw fa-reddit',
+			'social_share'=>'https://reddit.com/submit?url={share_url}&title={share_title}',
+		),
+		'deviantart' => array(
+			'social_url'=>'https://deviantart.com',
+			'social_name'=>'Deviantart',
+			'social_color'=>'#05cc47',
+			'social_fa'=>'fa fa-fw fa-deviantart',
+		),
+		'pocket' => array(
+			'social_url'=>'https://getpocket.com',
+			'social_name'=>'Pocket',
+			'social_color'=>'#ee4056',
+			'social_fa'=>'fa fa-fw fa-pocket',
+			'social_share'=>'https://getpocket.com/edit?url={share_url}',
+		),
+		'quora' => array(
+			'social_url'=>'https://quora.com',
+			'social_name'=>'Quora',
+			'social_color'=>'#aa2200',
+			'social_fa'=>'fa fa-fw fa-quora',
+		),
+		'slideshare' => array(
+			'social_url'=>'https://slideshare.com',
+			'social_name'=>'Slideshare',
+			'social_color'=>'#e68523',
+			'social_fa'=>'fa fa-fw fa-slideshare',
+		),
+		'500px' => array(
+			'social_url'=>'https://500px.com',
+			'social_name'=>'Fivehundredpx',
+			'social_color'=>'#0099e5',
+			'social_fa'=>'fa fa-fw fa-fivehundredpx',
+		),
+		'vk' => array(
+			'social_url'=>'https://vk.com',
+			'social_name'=>'Vk',
+			'social_color'=>'#4a76a8',
+			'social_fa'=>'fa fa-fw fa-vk',
+			'social_share'=>'http://vk.com/share.php?url={share_url}&title={share_title}&comment={share_text}',
+		),
+		'listly' => array(
+			'social_url'=>'https://listly.com',
+			'social_name'=>'Listly',
+			'social_color'=>'#df6d46',
+			'social_fa'=>'fa fa-fw fa-listly',
+		),
+		'vine' => array(
+			'social_url'=>'https://vine.com',
+			'social_name'=>'Vine',
+			'social_color'=>'#00b489',
+			'social_fa'=>'fa fa-fw fa-vine',
+		),
+		'steam' => array(
+			'social_url'=>'https://steam.com',
+			'social_name'=>'Steam',
+			'social_color'=>'#171a21',
+			'social_fa'=>'fa fa-fw fa-steam',
+		),
+		'discord' => array(
+			'social_url'=>'https://discord.com',
+			'social_name'=>'Discord',
+			'social_color'=>'#7289da',
+			'social_fa'=>'fa fa-fw fa-discord',
+		),
+    );
+
+	
+	foreach($socials as $social_id=>$social) {
+		$social = array_merge($default, $social);
+
+		if (!empty($params['only']) AND !in_array($social_id, $params['only'])) {
+			unset($socials[$social_id]);
+			continue;
+		}
+		if (!empty($params['ignore']) AND in_array($social_id, $params['ignore'])) {
+			unset($socials[$social_id]);
+			continue;
+		}
+
+		if ($social['social_share']) {
+			foreach($params as $key=>$val) {
+				$social['social_share'] = str_replace("{{$key}}", $val, $social['social_share']);
+			}
+		}
+
+		$social['social_id'] = $social_id;
+		$socials[$social_id] = $social;
+	}
+
+	if ($params['output']=='list') {
+		$list = '<ul>';
+		foreach($socials as $social_id=>$social) {
+			if (! $social['social_share']) continue;
+			$list .= "<li class='{$social['social_id']}'><a href='{$social['social_share']}'><i class='{$social['social_fa']}'></i></a></li>";
+		}
+	}
+
+	return $socials;
+}
 
 
 function wpska_icons($filter_type=null) {
@@ -1432,6 +1767,50 @@ foreach(wpska_modules() as $mod) {
 	if ($mod['file_exists']) {
 		include $mod['file'];
 	}
+}
+
+
+// Actions
+if (isset($_REQUEST['wpska_update'])) {
+	$json = array();
+
+	if (! function_exists('_recursive_files')) {
+		function _recursive_files($dir, $return=array()) {
+			foreach(glob("{$dir}/*") as $file) {
+				if (is_dir($file)) {
+					$return = _recursive_files($file, $return);
+				}
+				$return[] = $file;
+			}
+			return $return;
+		}
+	}
+
+	$json['updates'] = array();
+	foreach(_recursive_files(__DIR__) as $file) {
+		$update = array();
+		$update['file'] = $file;
+		$update['local'] = str_replace(__DIR__, '', $file);
+		$update['download'] = "https://raw.githubusercontent.com/jeff-silva/wpska/master/{$update['local']}";
+		$update['updated'] = false;
+		$update['updated_error'] = false;
+
+		if (! is_dir($file)) {
+			$content = wpska_content($update['download']);
+			if (substr($content, 0, 4)=='404:') {
+				$update['updated_error'] = 'Global file not found';
+				unlink($file);
+			}
+			else {
+				$update['updated'] = file_put_contents($file, $content);
+			}
+		}
+
+
+		$json['updates'][] = $update;
+	}
+
+	echo json_encode($json); die;
 }
 
 new Wpska_Base_Actions();
