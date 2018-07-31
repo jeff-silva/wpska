@@ -1,5 +1,11 @@
 <?php
 
+/*
+
+$upgrade_link = wp_nonce_url( self_admin_url( 'update.php?action=upgrade-plugin&plugin=' ) . $file_path, 'upgrade-plugin_' . $file_path );
+
+*/
+
 if (! defined('WPSKA')): define('WPSKA', __FILE__);
 if(! session_id() AND realpath(session_save_path())) session_start();
 
@@ -555,10 +561,10 @@ function wpska_update() {
 			$(".wpska-version i.fa").attr("class", "fa fa-fw fa-spin fa-spinner");
 			$.post("<?php echo wpska_base('?wpska_update'); ?>", function(resp) {
 				$(".wpska-version i.fa").attr("class", "fa fa-fw fa-refresh");
-				// location.reload();
+				if (confirm("Update concluído. Deseja atualizar a página?")) location.reload();
 			}, "json");
 		};
-		jQuery(document).ready(function($) {
+		window.wpskaInitUpdate = function() {
 			$.get("https://raw.githubusercontent.com/jeff-silva/wpska/master/composer.json", function(resp1) {
 				$.get("<?php echo wpska_base('/composer.json'); ?>", function(resp2) {
 					$(".wpska-version").each(function() {
@@ -567,12 +573,12 @@ function wpska_update() {
 						var text = [];
 						text.push("Versão global: "+resp1.version);
 						text.push("Versão local: "+resp2.version);
-						if (resp1.version != resp2.version) text.push('<a href="javascript:_wpskaDoUpdate();">Update <i class="fa fa-fw fa-refresh"></i></a>');
+						text.push('<a href="javascript:_wpskaDoUpdate();">Update <i class="fa fa-fw fa-refresh"></i></a>');
 						$(this).html(text.join(" | "));
 					});
 				}, "json");
 			}, "json");
-		});
+		};
 		</script>
 	</div>
 	<?php
@@ -1589,11 +1595,12 @@ class Wpska_Base_Actions extends Wpska_Actions
 		add_options_page('Help Settings', 'Help Settings', 'manage_options', 'wpska-settings', function() { ?>
 			<h1>Help Settings</h1>
 			<form action="" method="post" autocomplete="off">
-			<?php do_action('wpska_settings');
-			wpska_tab_render('tab_id=wpska_settings'); ?>
-			<div class="panel-footer text-right">
-				<input type="submit" name="wpska-settings" value="Salvar" class="btn btn-primary">
-			</div>
+				<?php do_action('wpska_settings');
+				wpska_tab_render('tab_id=wpska_settings'); ?>
+				<div class="panel-footer text-right">
+					<input type="submit" name="wpska-settings" value="Salvar" class="btn btn-primary">
+				</div>
+				<div><small class="text-muted"><?php echo __DIR__; ?></small></div>
 			</form>
 			<script>
 			jQuery(document).ready(function($) {

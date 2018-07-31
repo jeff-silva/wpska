@@ -2,6 +2,39 @@
 
 include __DIR__ . '/wpska.php';
 
+
+function _code($call) {
+	ob_start();
+	if (is_callable($call)) call_user_func($call);
+	$content = ob_get_clean();
+	$id = uniqid('tabs-code-');
+	?>
+	<div role="tabpanel">
+		<!-- Nav tabs -->
+		<ul class="nav nav-tabs" role="tablist">
+			<li role="presentation" class="active">
+				<a href="#<?php echo "{$id}-preview"; ?>" data-toggle="tab">Preview</a>
+			</li>
+			<li role="presentation" class="">
+				<a href="#<?php echo "{$id}-source"; ?>" data-toggle="tab">Source</a>
+			</li>
+		</ul><br>
+	
+		<!-- Tab panes -->
+		<div class="tab-content">
+			<div role="tabpanel" class="tab-pane active" id="<?php echo "{$id}-preview"; ?>">
+				<?php echo $content; ?>
+			</div>
+			<div role="tabpanel" class="tab-pane" id="<?php echo "{$id}-source"; ?>">
+				<link rel="import" href="./components/wpska-codemirror/index.php">
+				<wpska-codemirror><?php echo $content; ?></wpska-codemirror>
+			</div>
+		</div>
+	</div>
+	<?php
+}
+
+
 class Route
 {
 	static $content=null;
@@ -71,7 +104,6 @@ class Tab
 				call_user_func($tab['callback']);
 				$content = ob_get_clean();
 				echo $content;
-				echo '<br><br><textarea data-codemirror="{readOnly:true}">'. htmlspecialchars($content) .'</textarea>';
 			}
 		}
 	}
@@ -124,133 +156,63 @@ Route::get('/login', function() { ?>
 Route::get('', function() {
 	Tab::add('Form', function() { ?>
 
-	<div id="app-form">
-		<div class="panel panel-default">
-			<div class="panel-body">
-				<div class="row">
-					<div class="col-xs-12 text-right">
-						<button class="btn btn-default" @click="_inputAdd();">Add</button>
-					</div>
-					<div class="col-xs-12" v-for="input in inputs">
-						<div class="panel panel-default">
-							<div class="panel-body">
-								<div class="row">
-									<div class="col-xs-6">
-										<div class="form-group">
-											<label>Tipo</label>
-											<div class="wpska-select">
-												<input type="text" class="form-control">
-												<select class="form-control" v-model="input.type">
-													<option value="">Selecione</option>
-													<option value="text">Text</option>
-													<option value="textarea">Textarea</option>
-													<option value="checkbox">Checkbox</option>
-													<option value="radio">Radio</option>
-													<option value="select">Select</option>
-													<option value="flatpickr">Flatpickr</option>
-													<option value="medium">Medium</option>
-												</select>
-											</div>
-										</div>
 
-										<div class="form-group">
-											<label>Nome</label>
-											<input type="text" class="form-control" v-model="input.name">
-										</div>
-
-										<div class="form-group">
-											<label>Valor</label>
-											<input type="text" class="form-control" v-model="input.value">
-										</div>
-
-										<div class="form-group">
-											<label>Máscara</label>
-											<input type="text" class="form-control" v-model="input.mask">
-										</div>
-
-										<div class="form-group">
-											<label>Options</label>
-											<textarea class="form-control" v-model="input.options" @keyup="_inputOptionsToArr(input);"></textarea>
-										</div>
-									</div>
-
-									<div class="col-xs-6">
-										<div class="panel panel-default">
-											<div class="panel-body">
-												
-												<!-- none -->
-												<div v-if="input.type==''">
-													Nenhum selecionado
-												</div>
-
-												<!-- text -->
-												<div v-if="input.type=='text'">
-													<input type="text" :name="input.name" class="form-control" v-model="input.value" :data-mask="input.mask">
-												</div>
-
-												<!-- textarea -->
-												<div v-if="input.type=='textarea'">
-													<textarea :name="input.name" class="form-control" v-model="input.value"></textarea>
-												</div>
-
-												<!-- checkbox -->
-												<div v-if="input.type=='checkbox'">
-													<label>
-														<input type="checkbox" class="wpska-check" :name="input.name" v-model="input.value">
-														<span class="wpska-check-0"><i class="fa fa-fw fa-square-o"></i> {{ input.value }}</span>
-														<span class="wpska-check-1"><i class="fa fa-fw fa-check-square-o"></i> {{ input.value }}</span>
-													</label>
-												</div>
-
-												<!-- radio -->
-												<div v-if="input.type=='radio'">
-													<label style="display:block;" v-for="opt in input.optionsArr">
-														<input type="checkbox" class="wpska-check" :name="input.name" v-model="opt.value" :checked="opt.selected">
-														<span class="wpska-check-0"><i class="fa fa-fw fa-circle-o"></i> {{ opt.label }}</span>
-														<span class="wpska-check-1"><i class="fa fa-fw fa-check-circle-o"></i> {{ opt.label }}</span>
-													</label>
-												</div>
-
-												<!-- select -->
-												<div v-if="input.type=='select'">
-													<div class="wpska-select">
-														<input type="text" class="form-control">
-														<select class="form-control wpska-select" :name="input.name" v-model="input.value">
-															<option :value="opt.value" :selected="opt.selected" v-for="opt in input.optionsArr">{{ opt.label }}</option>
-														</select>
-													</div>
-												</div>
-
-												<!-- flatpickr -->
-												<div v-if="input.type=='flatpickr'">
-													<input type="text" class="form-control" data-flatpickr="{}" v-model="input.value">
-												</div>
-
-												<!-- medium -->
-												<div v-if="input.type=='medium'">
-													<div class="form-control" data-medium="" @click="$event.target.innerHTML=input.value;" @keyup="input.value = $event.target.innerHTML;">{{ input.value }}</div>
-													<!-- <textarea :name="input.name" class="form-control" v-model="input.value"></textarea> -->
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
+<?php _code(function() { ?>
+<link rel="import" href="./components/wpska-address/index.php">
+<div id="app-address">
+	<button type="button" class="btn btn-default" @click="_addrAdd();">Add</button>
+	<br><br>
+	<div class="list-group">
+		<div class="list-group-item" v-for="addr in addressList" style="position:relative;">
+			<div style="position:absolute; right:15px; z-index:2;">
+				<a href="javascript:;" class="fa fa-fw fa-remove" @click="_addrRemove(addr);"></a>
 			</div>
+			<!-- <strong>{{ addr.route }} - {{ addr.city }} / {{ addr.state_short }}</strong> -->
+			<wpska-address map="1" :value='JSON.stringify(addr)' @click="addr={route:555}"></wpska-address>
 		</div>
-		<pre>{{ $data }}</pre>
 	</div>
+	<pre>{{ $data }}</pre>
+</div>
+<script>
+window.wpskaInitAppAddress = function() {
+	new Vue({
+		el: "#app-address",
+		data: {
+			addressEdit: {route:"Rua 1"},
+			addressList: [
+				{route:"Rua 1"},
+				{route:"Rua 2"},
+			],
+		},
+		methods: {
+			_addrAdd: function() {
+				var app=this;
+				app.addressList.push({
+					route: ("Rua "+(app.addressList.length+1)),
+				});
+			},
+
+			_addrRemove: function(addr) {
+				var app=this;
+				// if (! confirm("Deletar?")) return;
+				var index = app.addressList.indexOf(addr);
+				app.addressList.splice(index, 1);
+			},
+		},
+	});
+};
+</script>
+<?php }); ?>
+
+<br>
+
+<?php _code(function() { ?>
+<link rel="import" href="./components/wpska-posts/index.php">
+<wpska-posts></wpska-posts>
+<?php }); ?>
 
 
-	<link rel="import" href="./components/wpska-address/index.php">
-	<wpska-address value='{route:"aaa"}' map="1" id="wpskaaddress01" onchanged="console.log(this.vuelValue());"></wpska-address>
-	<button type="button" onclick="alert( JSON.stringify(wpskaaddress01.vuelValue(), 2, ' ') );">Value</button>
 	
-	<link rel="import" href="./components/wpska-posts/index.php">
-	<wpska-posts></wpska-posts>
 
 
 	<script>
@@ -689,7 +651,6 @@ Route::get('', function() {
 <meta charset="UTF-8">
 	<title>Wpska</title>
 	<base href="http://projetos.jsiqueira.com/git/wpska/">
-	<script src="./wpska.js"></script>
 </head>
 <?php $theme = (isset($_GET['theme']) AND !empty($_GET['theme']))? $_GET['theme']: ''; ?>
 <body data-bootswatch="<?php echo $theme; ?>">
@@ -706,5 +667,7 @@ Route::get('', function() {
 		<?php Route::content(); ?>
 	</div>
 	<br>
+
+	<script src="./wpska.js"></script>
 </body>
 </html>
