@@ -546,6 +546,12 @@ function wpska_info() {
 }
 
 
+function wpska_url($path=NULL) {
+	$path = ltrim($path, '/');
+	return str_replace(ABSPATH, site_url().'/', __DIR__) . "/{$path}";
+}
+
+
 function wpska_update() {
 
 	$local_composer = __DIR__ . '/composer.json';
@@ -606,11 +612,9 @@ function wpska_modules($keyname=null) {
 	$modules['wpska_menu'] = array('title'=>'Menu customizado');
 	$modules['wpska_ui'] = array('title'=>'User interfaces');
 	$modules['wpska_email'] = array('title'=>'Gerenciamento e customização de e-mails');
-	$modules['wpska_postbox'] = array('title'=>'Gerenciamento de postboxes.');
-	$modules['wpska_posttypes'] = array('title'=>'Post types');
-	$modules['wpska_theme'] = array('title'=>'Customização de tema.');
 	$modules['wpska_maintenance'] = array('title'=>'Manutenção.');
 	$modules['wpska_elementor'] = array('title'=>'Elementor helpers.');
+	$modules['wpska_toolsets'] = array('title'=>'Toolsets helpers.');
 
 	foreach($modules as $key=>$mod) {
 		$mod['id'] = $key;
@@ -1597,8 +1601,10 @@ class Wpska_Base_Actions extends Wpska_Actions
 			<form action="" method="post" autocomplete="off">
 				<?php do_action('wpska_settings');
 				wpska_tab_render('tab_id=wpska_settings'); ?>
-				<div class="panel-footer text-right">
-					<input type="submit" name="wpska-settings" value="Salvar" class="btn btn-primary">
+				<div class="panel-footer">
+					<a href="<?php echo admin_url('/index.php?page=wpska-test'); ?>" class="btn btn-link">Examples</a>
+					<input type="submit" name="wpska-settings" value="Salvar" class="btn btn-primary pull-right">
+					<div class="clearfix"></div>
 				</div>
 				<div><small class="text-muted"><?php echo __DIR__; ?></small></div>
 			</form>
@@ -1633,6 +1639,92 @@ class Wpska_Base_Actions extends Wpska_Actions
 			<?php do_action('wpska_settings_cache'); ?>
 		</div>
 		<?php });
+
+
+		add_submenu_page(NULL, 'Wpska Tests', 'Wpska Tests', 'manage_options', 'wpska-test', function() {
+
+			function _value($key) {
+				return isset($_REQUEST[$key])? $_REQUEST[$key]: NULL;
+			}
+
+			function _code($title='Conteúdo', $call) {
+
+				ob_start();
+				call_user_func($call);
+				$content = ob_get_clean();
+				$source = str_replace("\t\t\t\t\t\t", "", $content);
+				$id = uniqid('wpska-code');
+
+				?>
+				<div role="tabpanel">
+					<!-- Nav tabs -->
+					<ul class="nav nav-tabs" role="tablist">
+						<li role="presentation" class="active"><a href="#<?php echo "{$id}-content"; ?>" aria-controls="<?php echo "{$id}-content"; ?>" role="tab" data-toggle="tab"><?php echo $title; ?></a></li>
+						<li role="presentation"><a href="#<?php echo "{$id}-source"; ?>" aria-controls="<?php echo "{$id}-source"; ?>" role="tab" data-toggle="tab">Source</a></li>
+					</ul><br>
+				
+					<!-- Tab panes -->
+					<div class="tab-content">
+						<div role="tabpanel" class="tab-pane active" id="<?php echo "{$id}-content"; ?>"><?php echo $content; ?></div>
+						<div role="tabpanel" class="tab-pane" id="<?php echo "{$id}-source"; ?>">
+							<wpska-codemirror settings="{readOnly:true}"><?php echo $source; ?></wpska-codemirror>
+						</div>
+					</div>
+				</div>
+				<?php
+			}
+
+			?> <br><br>
+
+			<link rel="import" href="<?php echo wpska_url('/components/wpska-codemirror/index.php'); ?>">
+
+			<form action="" method="post">
+				<div class="row">
+					<div class="col-sm-6">
+						<?php _code('Wpska-address simple', function() { ?>
+						<link rel="import" href="<?php echo wpska_url('/components/wpska-address/index.php'); ?>">
+						<wpska-address map="1" name="wpska-address-simple" value='<?php echo _value('wpska-address-simple'); ?>'></wpska-address>
+						<?php }); ?>
+					</div>
+
+					<div class="row">
+					<div class="col-sm-6">
+						<?php _code('Wpska-address advanced', function() { ?>
+						<link rel="import" href="<?php echo wpska_url('/components/wpska-address/index.php'); ?>">
+						<wpska-address map="1" name="wpska-address-advanced" value='<?php echo _value('wpska-address-advanced'); ?>'></wpska-address>
+						<button type="button" onclick="wpskaAddressSet();">set</button>
+						<button type="button" onclick="wpskaAddressGet();">get</button>
+						<button type="button" onclick="wpskaAddressLayout(0);">Layout 0</button>
+						<button type="button" onclick="wpskaAddressLayout(1);">Layout 1</button>
+						<button type="button" onclick="wpskaAddressLayout(2);">Layout 2</button>
+						<script>
+						function wpskaAddressSet() {
+							var el = $("[name=wpska-address-advanced]").get(0);
+							el._value({route:Math.round(Math.random()*99999)}, true);
+						}
+
+						function wpskaAddressGet() {
+							var el = $("[name=wpska-address-advanced]").get(0);
+							alert(JSON.stringify(el._value(), " ", 2));
+						}
+						function wpskaAddressLayout(n) {
+							var el = $("[name=wpska-address-advanced]").get(0);
+							el._layout(n);
+						}
+						</script>
+						<?php }); ?>
+					</div>
+				</div>
+
+				<br>
+				<div class="panel-footer text-right">
+					<input type="submit" value="Enviar" class="btn btn-default">
+				</div>
+			</form>
+			
+
+			<?php
+		});
 	}
 
 

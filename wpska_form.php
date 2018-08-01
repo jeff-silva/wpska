@@ -178,7 +178,7 @@ function wpska_newsletter($form_id, $content=null, $attrs=null) {
 
 
 
-if (function_exists('add_action')) {
+/* if (function_exists('add_action')) {
 	add_action('load-edit.php', function() { ?>
 	<?php if (isset($_GET['post_type']) AND $_GET['post_type']=='wpska_form'): ?>
 	<style>
@@ -186,7 +186,7 @@ if (function_exists('add_action')) {
 	</style>
 	<?php endif; ?>
 	<?php });
-}
+} */
 
 
 

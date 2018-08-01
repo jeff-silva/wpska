@@ -19,31 +19,40 @@
 
 <script>
 Vuel("wpska-codemirror", {
-	data: {
-		settings: {
+	data: function() {
+		console.log('wpska-codemirror.data', this.$el);
+		var data = {};
+
+		data.settings = {
 			lineNumbers: true,
 			selectionPointer: true,
 			htmlMode: true,
 			mode: "text/html",
 			theme: "ambiance",
 			tabMode: "indent",
-		},
+		};
+
+		return data;
 	},
 	methods: {
 		// 
 	},
 	mounted: function() {
-		var app=this, $=jQuery;
-
-		$(app.$el).find("textarea.wpska-codemirror-textarea").each(function() {
-			$(this).val( $(app.$el.parentElement).data("vuel-content") );
-			
-			var editor = CodeMirror.fromTextArea(this, app.settings);
-			emmetCodeMirror(editor, {
-				'Ctrl-E': 'emmet.expand_abbreviation_with_tab',
-				// 'Cmd-Alt-B': 'emmet.balance_outward',
+		var $=jQuery, app=_vm(this);
+		
+		setTimeout(function() {
+			var content = $(app.$el.parentElement).data("vuel-content");
+			$(app.$el).find("textarea.wpska-codemirror-textarea").each(function() {
+				$(this).val(content);
+				
+				var editor = CodeMirror.fromTextArea(this, app.settings);
+				emmetCodeMirror(editor, {
+					'Ctrl-E': 'emmet.expand_abbreviation_with_tab',
+					// 'Cmd-Alt-B': 'emmet.balance_outward',
+				});
 			});
-		});
+		}, 0);
+
 	},
 });
 </script>

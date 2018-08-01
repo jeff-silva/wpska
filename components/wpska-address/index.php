@@ -15,9 +15,9 @@
 						<i class="fa fa-fw fa-globe"></i>
 					</button>
 				</div>
-				<input type="text" class="form-control" placeholder="Pesquise endereço ou CEP" v-model="search" @keyup.13="_search();">
+				<input type="text" class="form-control" placeholder="Pesquise endereço ou CEP" v-model="search" @keyup.13.prevent="_search();">
 				<div class="input-group-btn">
-					<button type="submit" class="btn btn-default" @click="_search();">
+					<button type="button" class="btn btn-default" @click="_search();">
 						<i class="fa fa-fw fa-search" v-if="loading==0"></i>
 						<i class="fa fa-fw fa-spin fa-spinner" v-else></i>
 					</button>
@@ -49,9 +49,9 @@
 						<i class="fa fa-fw fa-globe"></i>
 					</button>
 				</div>
-				<input type="text" class="form-control" placeholder="Pesquise endereço ou CEP" v-model="search" @keyup.13="_search();">
+				<input type="text" class="form-control" placeholder="Pesquise endereço ou CEP" v-model="search" @keyup.13.prevent="_search();">
 				<div class="input-group-btn">
-					<button type="submit" class="btn btn-default" @click="_search();">
+					<button type="button" class="btn btn-default" @click="_search();">
 						<i class="fa fa-fw fa-search" v-if="loading==0"></i>
 						<i class="fa fa-fw fa-spin fa-spinner" v-else></i>
 					</button>
@@ -85,9 +85,9 @@
 									<i class="fa fa-fw fa-globe"></i>
 								</button>
 							</div>
-							<input type="text" class="form-control" placeholder="Pesquise endereço ou CEP" v-model="search" @keyup.13="_search();">
+							<input type="text" class="form-control" placeholder="Pesquise endereço ou CEP" v-model="search" @keyup.13.prevent="_search();">
 							<div class="input-group-btn">
-								<button type="submit" class="btn btn-default" @click="_search();">
+								<button type="button" class="btn btn-default" @click="_search();">
 									<i class="fa fa-fw fa-search" v-if="loading==0"></i>
 									<i class="fa fa-fw fa-spin fa-spinner" v-else></i>
 								</button>
@@ -114,7 +114,6 @@
 		</div>
 	</div>
 	<!-- Layout 2 -->
-
 </template>
 
 <script>
@@ -156,10 +155,19 @@ Vuel("wpska-address", {
 		},
 		_currentLocation: function() {
 			var app=this, $=jQuery;
-			$.post("https://www.googleapis.com/geolocation/v1/geolocate?key=AIzaSyDCa1LUe1vOczX1hO_iGYgyo8p_jYuGOPU", function(resp) {
-				Vue.set(app, "search", (resp.location.lat+","+resp.location.lng));
-				app._search();
-			}, "json");
+			$.ajax({
+				type : 'POST',
+				data: '', 
+				url: "https://www.googleapis.com/geolocation/v1/geolocate?key=<?php echo wpska_settings('google_key'); ?>", 
+				success: function(resp){
+					Vue.set(app, "search", (resp.location.lat+","+resp.location.lng));
+					app._search();
+				},
+			});
+		},
+		_layout: function(n) {
+			var app = _vm(this);
+			Vue.set(app, "layout", n);
 		},
 	},
 	mounted: function() {
