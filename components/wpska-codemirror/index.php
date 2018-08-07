@@ -20,7 +20,6 @@
 <script>
 Vuel("wpska-codemirror", {
 	data: function() {
-		console.log('wpska-codemirror.data', this.$el);
 		var data = {};
 
 		data.settings = {

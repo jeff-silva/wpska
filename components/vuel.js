@@ -7,6 +7,8 @@ function Vuel(tagname, paramsDefault) {
 	var proto = Object.create(HTMLElement.prototype);
 	proto.createdCallback = function() {};
 	proto.attachedCallback = function() {
+		console.log('proto', proto);
+
 		var wrapper=this, $=jQuery, dataset={};
 		dataset['vuel-content'] = this.innerHTML;
 
@@ -20,7 +22,6 @@ function Vuel(tagname, paramsDefault) {
 			var $data = paramsDefault.data||{};
 
 			if (typeof paramsDefault.data=="function") {
-				console.log(this);
 				$data = paramsDefault.data.call(this);
 			}
 

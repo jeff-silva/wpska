@@ -805,6 +805,7 @@ function wpska_auth($pass=null) {
 
 
 
+
 /* wpska_base('/filename.php', __DIR__); */
 function wpska_base($path=null, $realpath=null) {
 	$realpath = $realpath? $realpath: __DIR__;
@@ -814,6 +815,7 @@ function wpska_base($path=null, $realpath=null) {
 
 
 
+/* Get posts with callback */
 function wpska_posts($queryArg=null, $call=null) {
 	global $post, $wp_query;
 	$query = false;

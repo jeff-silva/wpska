@@ -522,7 +522,6 @@ window.wpskaInitAppAddress = function() {
 
 	<script>
 	window.Vuel2 = function(tagname, params) {
-		console.log(params);
 		params = typeof params=="object"? params: {};
 		params.data = typeof params.data=="object"? params.data: {};
 		var templateHTML = (document.currentScript? document.currentScript.ownerDocument.getElementById(tagname).innerHTML: "");
